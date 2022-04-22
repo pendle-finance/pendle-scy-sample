@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity ^0.8.0;
-pragma abicoder v2;
+pragma solidity 0.8.9;
 import "../../SuperComposableYield/implementations/SCYBase.sol";
 import "../../interfaces/IWstETH.sol";
 
@@ -20,6 +19,7 @@ contract PendleStEthSCY is SCYBase {
         address _stETH,
         address _wstETH
     ) SCYBase(_name, _symbol, __scydecimals, __assetDecimals) {
+        require(_wstETH != address(0), "zero address");
         stETH = _stETH;
         wstETH = _wstETH;
         IERC20(stETH).safeIncreaseAllowance(wstETH, type(uint256).max);
@@ -67,6 +67,7 @@ contract PendleStEthSCY is SCYBase {
     function scyIndexCurrent() public virtual override returns (uint256 res) {
         res = IWstETH(wstETH).stEthPerToken();
         lastScyIndex = res;
+        emit UpdateScyIndex(lastScyIndex);
     }
 
     function scyIndexStored() public view virtual override returns (uint256 res) {
