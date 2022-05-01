@@ -18,8 +18,6 @@ abstract contract SCYBase is ERC20, ISuperComposableYield, ReentrancyGuard {
     uint8 public immutable assetDecimals;
     bytes32 public immutable assetId;
 
-    mapping(address => uint256) internal lastBalanceOf;
-
     constructor(
         string memory _name,
         string memory _symbol,
