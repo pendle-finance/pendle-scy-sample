@@ -89,12 +89,6 @@ contract PendleStEthSCY is SCYBase {
     //solhint-disable-next-line no-empty-blocks
     function redeemReward(address user) public virtual override returns (uint256[] memory) {}
 
-    //solhint-disable-next-line no-empty-blocks
-    function updateGlobalReward() public virtual override {}
-
-    //solhint-disable-next-line no-empty-blocks
-    function updateUserReward(address user) public virtual override {}
-
     function getRewardTokens() public view virtual returns (address[] memory res) {
         res = new address[](0);
     }

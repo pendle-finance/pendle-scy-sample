@@ -48,15 +48,6 @@ abstract contract SCYBaseWithRewards is SCYBase, RewardManager {
         emit RedeemReward(user, outAmounts);
     }
 
-    function updateGlobalReward() public virtual override {
-        address[] memory rewardTokens = getRewardTokens();
-        _updateGlobalReward(rewardTokens, totalSupply());
-    }
-
-    function updateUserReward(address user) public virtual override {
-        _updateUserReward(user, balanceOf(user), totalSupply());
-    }
-
     function getRewardTokens()
         public
         view

@@ -39,10 +39,6 @@ interface ISuperComposableYield is IERC20Metadata {
         uint256 minAmountBaseOut
     ) external returns (uint256 amountBaseOut);
 
-    function updateGlobalReward() external;
-
-    function updateUserReward(address user) external;
-
     function redeemReward(address user) external returns (uint256[] memory outAmounts);
 
     /**
