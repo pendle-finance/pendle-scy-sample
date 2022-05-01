@@ -10,7 +10,7 @@ contract PendleYearnVaultScy is SCYBase {
     address public immutable underlying;
     address public immutable yvToken;
 
-    uint256 public override scyIndexStored;
+    uint256 public override pricePerAssetStored;
 
     constructor(
         string memory _name,
@@ -66,11 +66,11 @@ contract PendleYearnVaultScy is SCYBase {
                                SCY-INDEX
     //////////////////////////////////////////////////////////////*/
 
-    function scyIndexCurrent() public virtual override returns (uint256) {
+    function pricePerAssetCurrent() public virtual override returns (uint256) {
         uint256 res = IYearnVault(yvToken).pricePerShare();
 
-        scyIndexStored = res;
-        emit UpdateScyIndex(res);
+        pricePerAssetStored = res;
+        emit UpdatePricePerAsset(res);
 
         return res;
     }

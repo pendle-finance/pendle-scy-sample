@@ -32,7 +32,7 @@
     - Existing yield generating mechanisms can be **easily** **converted** into Super Composable Yield tokens through a wrapper contract.
 - So, what’s the Super Composable Yield **token standard**?
     - These are the tentative functions on top of ERC20s in Super Composable Yield standard:
-    
+
     ```jsx
     function mintNoPull(
         address receiver,
@@ -59,18 +59,18 @@
         uint256 amountScyToPull,
         uint256 minAmountBaseOut
     ) external returns (uint256 amountBaseOut);
-    
+
     function updateGlobalRewards() external;
     function updateUserRewards(address user) external;
     function redeemReward(address user) external returns (uint256[] memory outAmounts);
-    
-    function scyIndexCurrent() external returns (uint256);
-    function scyIndexStored() external view returns (uint256);
-    
+
+    function pricePerAssetCurrent() external returns (uint256);
+    function pricePerAssetStored() external view returns (uint256);
+
     function getBaseTokens() external view returns (address[] memory);
     function isValidBaseToken(address token) external view returns (bool);
     function getRewardTokens() external view returns (address[] memory);
-    
+
     // Metadata
     function assetDecimals() external view returns (uint8);
     function assetId() external view returns (bytes32);

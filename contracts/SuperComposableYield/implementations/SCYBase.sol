@@ -12,7 +12,7 @@ abstract contract SCYBase is ERC20, ISuperComposableYield, ReentrancyGuard {
     using SafeERC20 for IERC20;
     using Math for uint256;
 
-    event UpdateScyIndex(uint256 scyIndex);
+    event UpdatePricePerAsset(uint256 pricePerAsset);
 
     uint8 private immutable _scyDecimals;
     uint8 private immutable _assetDecimals;
@@ -82,9 +82,9 @@ abstract contract SCYBase is ERC20, ISuperComposableYield, ReentrancyGuard {
                                SCY-INDEX
     //////////////////////////////////////////////////////////////*/
 
-    function scyIndexCurrent() external virtual override returns (uint256 res);
+    function pricePerAssetCurrent() external virtual override returns (uint256 res);
 
-    function scyIndexStored() external view virtual override returns (uint256 res);
+    function pricePerAssetStored() external view virtual override returns (uint256 res);
 
     /*///////////////////////////////////////////////////////////////
                 MISC METADATA FUNCTIONS

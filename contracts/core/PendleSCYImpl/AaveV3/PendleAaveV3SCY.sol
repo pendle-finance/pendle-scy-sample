@@ -16,7 +16,7 @@ contract PendleAaveV3SCY is SCYBaseWithRewards {
     address public immutable rewardsController;
     address public immutable aToken;
 
-    uint256 public override scyIndexStored;
+    uint256 public override pricePerAssetStored;
     uint256 public constant PRECISION_INDEX = 1e9;
 
     constructor(
@@ -76,11 +76,11 @@ contract PendleAaveV3SCY is SCYBaseWithRewards {
                                SCY-INDEX
     //////////////////////////////////////////////////////////////*/
 
-    function scyIndexCurrent() public virtual override returns (uint256) {
+    function pricePerAssetCurrent() public virtual override returns (uint256) {
         uint256 res = _getReserveNormalizedIncome() / PRECISION_INDEX;
 
-        scyIndexStored = res;
-        emit UpdateScyIndex(res);
+        pricePerAssetStored = res;
+        emit UpdatePricePerAsset(res);
 
         return res;
     }

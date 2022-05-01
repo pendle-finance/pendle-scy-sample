@@ -42,15 +42,15 @@ interface ISuperComposableYield is IERC20Metadata {
     function redeemReward(address user) external returns (uint256[] memory outAmounts);
 
     /**
-    * @notice scyIndexCurrent * scyBalance / 1e18 must return the asset balance of the account
+    * @notice pricePerAssetCurrent * scyBalance / 1e18 must return the asset balance of the account
     * @notice vice-versa, if a user uses some amount of tokens equivalent to X asset, the amount of scy
-    he can mint must be X * scyIndexCurrent / 1e18
+    he can mint must be X * pricePerAssetCurrent / 1e18
     * @dev SCYUtils's assetToScy & scyToAsset should be used instead of raw multiplication
     & division
     */
-    function scyIndexCurrent() external returns (uint256);
+    function pricePerAssetCurrent() external returns (uint256);
 
-    function scyIndexStored() external view returns (uint256);
+    function pricePerAssetStored() external view returns (uint256);
 
     function getBaseTokens() external view returns (address[] memory);
 
