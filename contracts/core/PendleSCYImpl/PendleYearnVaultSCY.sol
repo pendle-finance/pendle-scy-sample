@@ -10,16 +10,17 @@ contract PendleYearnVaultScy is SCYBase {
     address public immutable underlying;
     address public immutable yvToken;
 
-    uint256 public lastScyIndex;
+    uint256 public override scyIndexStored;
 
     constructor(
         string memory _name,
         string memory _symbol,
         uint8 __scydecimals,
         uint8 __assetDecimals,
+        bytes32 __assetId,
         address _underlying,
         address _yvToken
-    ) SCYBase(_name, _symbol, __scydecimals, __assetDecimals) {
+    ) SCYBase(_name, _symbol, __scydecimals, __assetDecimals, __assetId) {
         require(_yvToken != address(0), "zero address");
         yvToken = _yvToken;
         underlying = _underlying;
@@ -39,10 +40,10 @@ contract PendleYearnVaultScy is SCYBase {
         if (token == yvToken) {
             amountScyOut = amountBase;
         } else {
-            // must be underlying
-            IYearnVault(yvToken).deposit(amountBase); // ignore return
-            _afterSendToken(underlying);
-            amountScyOut = _afterReceiveToken(yvToken);
+            // token == underlying
+            uint256 preBalance = IERC20(yvToken).balanceOf(address(this));
+            IYearnVault(yvToken).deposit(amountBase);
+            amountBase = IERC20(yvToken).balanceOf(address(this)) - preBalance; // 1 yvToken = 1 SCY
         }
     }
 
@@ -50,15 +51,14 @@ contract PendleYearnVaultScy is SCYBase {
         internal
         virtual
         override
-        returns (uint256 amountBaseOut)
+        returns (uint256 amountTokenOut)
     {
         if (token == yvToken) {
-            amountBaseOut = amountScy;
+            amountTokenOut = amountScy;
         } else {
-            // must be underlying
-            IYearnVault(yvToken).withdraw(amountScy); // ignore return
-            _afterSendToken(yvToken);
-            amountBaseOut = _afterReceiveToken(underlying);
+            // token == underlying
+            IYearnVault(yvToken).withdraw(amountScy);
+            amountTokenOut = IERC20(underlying).balanceOf(address(this));
         }
     }
 
@@ -66,14 +66,13 @@ contract PendleYearnVaultScy is SCYBase {
                                SCY-INDEX
     //////////////////////////////////////////////////////////////*/
 
-    function scyIndexCurrent() public virtual override returns (uint256 res) {
-        lastScyIndex = IYearnVault(yvToken).pricePerShare();
-        emit UpdateScyIndex(lastScyIndex);
-        return lastScyIndex;
-    }
+    function scyIndexCurrent() public virtual override returns (uint256) {
+        uint256 res = IYearnVault(yvToken).pricePerShare();
 
-    function scyIndexStored() public view override returns (uint256 res) {
-        res = lastScyIndex;
+        scyIndexStored = res;
+        emit UpdateScyIndex(res);
+
+        return res;
     }
 
     /*///////////////////////////////////////////////////////////////
@@ -81,12 +80,13 @@ contract PendleYearnVaultScy is SCYBase {
     //////////////////////////////////////////////////////////////*/
 
     function getBaseTokens() public view virtual override returns (address[] memory res) {
-        res = new address[](1);
+        res = new address[](2);
         res[0] = underlying;
+        res[1] = yvToken;
     }
 
-    function isValidBaseToken(address token) public view virtual override returns (bool res) {
-        res = (token == underlying);
+    function isValidBaseToken(address token) public view virtual override returns (bool) {
+        return token == underlying || token == yvToken;
     }
 
     /*///////////////////////////////////////////////////////////////

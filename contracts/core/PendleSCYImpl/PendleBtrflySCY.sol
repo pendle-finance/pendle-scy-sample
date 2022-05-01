@@ -12,17 +12,18 @@ contract PendleBtrflyScy is SCYBase {
     address public immutable xBTRFLY;
     address public immutable wxBTRFLY;
 
-    uint256 public lastScyIndex;
+    uint256 public override scyIndexStored;
 
     constructor(
         string memory _name,
         string memory _symbol,
         uint8 __scydecimals,
         uint8 __assetDecimals,
+        bytes32 __assetId,
         address _BTRFLY,
         address _xBTRFLY,
         address _wxBTRFLY
-    ) SCYBase(_name, _symbol, __scydecimals, __assetDecimals) {
+    ) SCYBase(_name, _symbol, __scydecimals, __assetDecimals, __assetId) {
         require(_wxBTRFLY != address(0), "zero address");
         BTRFLY = _BTRFLY;
         xBTRFLY = _xBTRFLY;
@@ -40,17 +41,15 @@ contract PendleBtrflyScy is SCYBase {
         override
         returns (uint256 amountScyOut)
     {
-        if (token == BTRFLY) {
-            amountScyOut = IWXBTRFLY(wxBTRFLY).wrapFromBTRFLY(amountBase);
-            _afterSendToken(BTRFLY);
-            _afterReceiveToken(wxBTRFLY);
-        } else if (token == xBTRFLY) {
-            amountScyOut = IWXBTRFLY(wxBTRFLY).wrapFromxBTRFLY(amountBase);
-            _afterSendToken(xBTRFLY);
-            _afterReceiveToken(wxBTRFLY);
-        } else {
-            // 1 wxBTRFLY = 1 SCY
+        if (token == wxBTRFLY) {
             amountScyOut = amountBase;
+        } else if (token == xBTRFLY) {
+            // wrapFromxBTRFLY returns amountWXBTRFLYout
+            amountScyOut = IWXBTRFLY(wxBTRFLY).wrapFromxBTRFLY(amountBase);
+        } else {
+            // must be BTRFLY
+            // wrapFromBTRFLY returns amountWXBTRFLYout
+            amountScyOut = IWXBTRFLY(wxBTRFLY).wrapFromBTRFLY(amountBase);
         }
     }
 
@@ -58,17 +57,15 @@ contract PendleBtrflyScy is SCYBase {
         internal
         virtual
         override
-        returns (uint256 amountBaseOut)
+        returns (uint256 amountTokenOut)
     {
-        if (token == BTRFLY) {
-            amountBaseOut = IWXBTRFLY(wxBTRFLY).unwrapToBTRFLY(amountScy);
-            _afterSendToken(wxBTRFLY);
+        if (token == wxBTRFLY) {
+            amountTokenOut = amountScy;
         } else if (token == xBTRFLY) {
-            amountBaseOut = IWXBTRFLY(wxBTRFLY).unwrapToxBTRFLY(amountScy);
-            _afterSendToken(wxBTRFLY);
+            amountTokenOut = IWXBTRFLY(wxBTRFLY).unwrapToxBTRFLY(amountScy);
         } else {
-            // 1 wxBTRFLY = 1 SCY
-            amountBaseOut = amountScy;
+            // must be BTRFLY
+            amountTokenOut = IWXBTRFLY(wxBTRFLY).unwrapToBTRFLY(amountScy);
         }
     }
 
@@ -77,13 +74,12 @@ contract PendleBtrflyScy is SCYBase {
     //////////////////////////////////////////////////////////////*/
 
     function scyIndexCurrent() public virtual override returns (uint256) {
-        lastScyIndex = IWXBTRFLY(wxBTRFLY).xBTRFLYValue(Math.ONE);
-        emit UpdateScyIndex(lastScyIndex);
-        return lastScyIndex;
-    }
+        uint256 res = IWXBTRFLY(wxBTRFLY).xBTRFLYValue(Math.ONE);
 
-    function scyIndexStored() public view override returns (uint256) {
-        return lastScyIndex;
+        scyIndexStored = res;
+        emit UpdateScyIndex(res);
+
+        return res;
     }
 
     /*///////////////////////////////////////////////////////////////
@@ -97,8 +93,8 @@ contract PendleBtrflyScy is SCYBase {
         res[2] = wxBTRFLY;
     }
 
-    function isValidBaseToken(address token) public view virtual override returns (bool res) {
-        res = (token == BTRFLY || token == xBTRFLY || token == wxBTRFLY);
+    function isValidBaseToken(address token) public view virtual override returns (bool) {
+        return token == BTRFLY || token == xBTRFLY || token == wxBTRFLY;
     }
 
     /*///////////////////////////////////////////////////////////////

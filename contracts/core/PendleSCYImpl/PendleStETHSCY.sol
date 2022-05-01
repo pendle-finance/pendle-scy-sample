@@ -9,7 +9,7 @@ contract PendleStEthSCY is SCYBase {
     address public immutable stETH;
     address public immutable wstETH;
 
-    uint256 public lastScyIndex;
+    uint256 public override scyIndexStored;
 
     constructor(
         string memory _name,
@@ -17,8 +17,9 @@ contract PendleStEthSCY is SCYBase {
         uint8 __scydecimals,
         uint8 __assetDecimals,
         address _stETH,
-        address _wstETH
-    ) SCYBase(_name, _symbol, __scydecimals, __assetDecimals) {
+        address _wstETH,
+        bytes32 __assetId
+    ) SCYBase(_name, _symbol, __scydecimals, __assetDecimals, __assetId) {
         require(_wstETH != address(0), "zero address");
         stETH = _stETH;
         wstETH = _wstETH;
@@ -34,13 +35,10 @@ contract PendleStEthSCY is SCYBase {
         override
         returns (uint256 amountScyOut)
     {
-        if (token == stETH) {
-            amountScyOut = IWstETH(wstETH).wrap(amountBase);
-            _afterSendToken(stETH);
-            _afterReceiveToken(wstETH);
-        } else {
-            // 1 wstETH = 1 SCY
+        if (token == wstETH) {
             amountScyOut = amountBase;
+        } else {
+            amountScyOut = IWstETH(wstETH).wrap(amountBase); // .wrap returns amount of wstETH out
         }
     }
 
@@ -48,15 +46,12 @@ contract PendleStEthSCY is SCYBase {
         internal
         virtual
         override
-        returns (uint256 amountBaseOut)
+        returns (uint256 amountTokenOut)
     {
-        if (token == stETH) {
-            amountBaseOut = IWstETH(wstETH).unwrap(amountScy);
-            _afterSendToken(wstETH);
-            _afterReceiveToken(stETH);
+        if (token == wstETH) {
+            amountTokenOut = amountScy;
         } else {
-            // 1 wstETH = 1 SCY
-            amountBaseOut = amountScy;
+            amountTokenOut = IWstETH(wstETH).unwrap(amountScy);
         }
     }
 
@@ -64,14 +59,13 @@ contract PendleStEthSCY is SCYBase {
                                SCY-INDEX
     //////////////////////////////////////////////////////////////*/
 
-    function scyIndexCurrent() public virtual override returns (uint256 res) {
-        res = IWstETH(wstETH).stEthPerToken();
-        lastScyIndex = res;
-        emit UpdateScyIndex(lastScyIndex);
-    }
+    function scyIndexCurrent() public virtual override returns (uint256) {
+        uint256 res = IWstETH(wstETH).stEthPerToken();
 
-    function scyIndexStored() public view virtual override returns (uint256 res) {
-        res = lastScyIndex;
+        scyIndexStored = res;
+        emit UpdateScyIndex(res);
+
+        return res;
     }
 
     /*///////////////////////////////////////////////////////////////
@@ -84,8 +78,8 @@ contract PendleStEthSCY is SCYBase {
         res[1] = wstETH;
     }
 
-    function isValidBaseToken(address token) public view virtual override returns (bool res) {
-        res = (token == stETH || token == wstETH);
+    function isValidBaseToken(address token) public view virtual override returns (bool) {
+        return token == stETH || token == wstETH;
     }
 
     /*///////////////////////////////////////////////////////////////

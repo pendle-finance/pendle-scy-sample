@@ -15,19 +15,20 @@ contract PendleBenQiErc20SCY is SCYBaseWithRewards {
     address public immutable comptroller;
     address public immutable qiToken;
 
-    uint256 public lastScyIndex;
+    uint256 public override scyIndexStored;
 
     constructor(
         string memory _name,
         string memory _symbol,
         uint8 __scydecimals,
         uint8 __assetDecimals,
+        bytes32 __assetId,
         address _underlying,
         address _qiToken,
         address _comptroller,
         address _QI,
         address _WAVAX
-    ) SCYBaseWithRewards(_name, _symbol, __scydecimals, __assetDecimals) {
+    ) SCYBaseWithRewards(_name, _symbol, __scydecimals, __assetDecimals, __assetId) {
         require(
             _qiToken != address(0) &&
                 _QI != address(0) &&
@@ -60,10 +61,10 @@ contract PendleBenQiErc20SCY is SCYBaseWithRewards {
         if (token == qiToken) {
             amountScyOut = amountBase;
         } else {
+            uint256 preBalance = IQiErc20(qiToken).balanceOf(address(this));
             uint256 errCode = IQiErc20(qiToken).mint(amountBase);
             require(errCode == 0, "mint failed");
-            _afterSendToken(underlying);
-            amountScyOut = _afterReceiveToken(qiToken);
+            amountScyOut = IQiErc20(qiToken).balanceOf(address(this)) - preBalance;
         }
     }
 
@@ -76,11 +77,9 @@ contract PendleBenQiErc20SCY is SCYBaseWithRewards {
         if (token == qiToken) {
             amountBaseOut = amountScy;
         } else {
-            // must be underlying
             uint256 errCode = IQiErc20(qiToken).redeem(amountScy);
             require(errCode == 0, "redeem failed");
-            _afterSendToken(qiToken);
-            amountBaseOut = _afterReceiveToken(underlying);
+            amountBaseOut = IERC20(underlying).balanceOf(address(this));
         }
     }
 
@@ -89,14 +88,12 @@ contract PendleBenQiErc20SCY is SCYBaseWithRewards {
     //////////////////////////////////////////////////////////////*/
 
     function scyIndexCurrent() public virtual override returns (uint256) {
-        lastScyIndex = IQiToken(qiToken).exchangeRateCurrent();
+        uint256 res = IQiToken(qiToken).exchangeRateCurrent();
 
-        emit UpdateScyIndex(lastScyIndex);
-        return lastScyIndex;
-    }
+        scyIndexStored = res;
+        emit UpdateScyIndex(res);
 
-    function scyIndexStored() public view override returns (uint256) {
-        return lastScyIndex;
+        return scyIndexStored;
     }
 
     function getRewardTokens() public view override returns (address[] memory res) {

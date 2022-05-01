@@ -16,7 +16,7 @@ contract PendleAaveV3SCY is SCYBaseWithRewards {
     address public immutable rewardsController;
     address public immutable aToken;
 
-    uint256 public lastScyIndex;
+    uint256 public override scyIndexStored;
     uint256 public constant PRECISION_INDEX = 1e9;
 
     constructor(
@@ -24,11 +24,12 @@ contract PendleAaveV3SCY is SCYBaseWithRewards {
         string memory _symbol,
         uint8 __scydecimals,
         uint8 __assetDecimals,
+        bytes32 __assetId,
         address _aavePool,
         address _underlying,
         address _aToken,
         address _rewardsController
-    ) SCYBaseWithRewards(_name, _symbol, __scydecimals, __assetDecimals) {
+    ) SCYBaseWithRewards(_name, _symbol, __scydecimals, __assetDecimals, __assetId) {
         aToken = _aToken;
         pool = _aavePool;
         underlying = _underlying;
@@ -48,11 +49,11 @@ contract PendleAaveV3SCY is SCYBaseWithRewards {
     {
         // aTokenScaled -> scy is 1:1
         if (token == aToken) {
-            amountScyOut = amountBase;
+            amountScyOut = _aTokenToScaledBalance(amountBase);
         } else {
+            uint256 preScaledBalance = IAToken(aToken).scaledBalanceOf(address(this));
             IAavePool(pool).supply(underlying, amountBase, address(this), 0);
-            _afterSendToken(underlying);
-            amountScyOut = _afterReceiveToken(aToken);
+            amountScyOut = IAToken(aToken).scaledBalanceOf(address(this)) - preScaledBalance;
         }
     }
 
@@ -60,15 +61,14 @@ contract PendleAaveV3SCY is SCYBaseWithRewards {
         internal
         virtual
         override
-        returns (uint256 amountBaseOut)
+        returns (uint256 amountTokenOut)
     {
         if (token == aToken) {
-            amountBaseOut = amountScy.rayMul(aaveIndexCurrent());
+            amountTokenOut = _scaledBalanceToAToken(amountScy);
         } else {
-            uint256 amountBaseExpected = amountScy.rayMul(aaveIndexCurrent());
-            IAavePool(pool).withdraw(underlying, amountBaseExpected, address(this));
-            _afterSendToken(aToken);
-            amountBaseOut = _afterReceiveToken(token);
+            uint256 amountATokenToWithdraw = _scaledBalanceToAToken(amountScy);
+            IAavePool(pool).withdraw(underlying, amountATokenToWithdraw, address(this));
+            amountTokenOut = IERC20(underlying).balanceOf(address(this));
         }
     }
 
@@ -76,19 +76,13 @@ contract PendleAaveV3SCY is SCYBaseWithRewards {
                                SCY-INDEX
     //////////////////////////////////////////////////////////////*/
 
-    function scyIndexCurrent() public virtual override returns (uint256 res) {
-        aaveIndexCurrent();
-        res = lastScyIndex;
-        emit UpdateScyIndex(lastScyIndex);
-    }
+    function scyIndexCurrent() public virtual override returns (uint256) {
+        uint256 res = _getReserveNormalizedIncome() / PRECISION_INDEX;
 
-    function aaveIndexCurrent() public returns (uint256 res) {
-        res = IAavePool(pool).getReserveNormalizedIncome(underlying);
-        lastScyIndex = res / PRECISION_INDEX;
-    }
+        scyIndexStored = res;
+        emit UpdateScyIndex(res);
 
-    function scyIndexStored() public view override returns (uint256 res) {
-        res = lastScyIndex;
+        return res;
     }
 
     function getRewardTokens() public view override returns (address[] memory res) {
@@ -120,20 +114,15 @@ contract PendleAaveV3SCY is SCYBaseWithRewards {
         IAaveRewardsController(rewardsController).claimAllRewards(assets, address(this));
     }
 
-    /// @dev balance of aToken is saved by scaledBalanceOf instead
-    function _afterReceiveToken(address token) internal virtual override returns (uint256 res) {
-        uint256 curBalance = (token == aToken)
-            ? IAToken(aToken).scaledBalanceOf(address(this))
-            : IERC20(token).balanceOf(address(this));
-        res = curBalance - lastBalanceOf[token];
-        lastBalanceOf[token] = curBalance;
+    function _getReserveNormalizedIncome() internal view returns (uint256) {
+        return IAavePool(pool).getReserveNormalizedIncome(underlying);
     }
 
-    function _afterSendToken(address token) internal virtual override {
-        if (token == aToken) {
-            lastBalanceOf[token] = IAToken(aToken).scaledBalanceOf(address(this));
-        } else {
-            lastBalanceOf[token] = IERC20(token).balanceOf(address(this));
-        }
+    function _aTokenToScaledBalance(uint256 aTokenAmount) internal view returns (uint256) {
+        return aTokenAmount.rayDiv(_getReserveNormalizedIncome());
+    }
+
+    function _scaledBalanceToAToken(uint256 scaledAmount) internal view returns (uint256) {
+        return scaledAmount.rayMul(_getReserveNormalizedIncome());
     }
 }
