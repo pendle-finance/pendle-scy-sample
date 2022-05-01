@@ -15,8 +15,8 @@ abstract contract SCYBase is ERC20, ISuperComposableYield, ReentrancyGuard {
     event UpdatePricePerAsset(uint256 pricePerAsset);
 
     uint8 private immutable _scyDecimals;
-    uint8 private immutable _assetDecimals;
-    bytes32 private immutable _assetId;
+    uint8 public immutable assetDecimals;
+    bytes32 public immutable assetId;
 
     mapping(address => uint256) internal lastBalanceOf;
 
@@ -28,8 +28,8 @@ abstract contract SCYBase is ERC20, ISuperComposableYield, ReentrancyGuard {
         bytes32 __assetId
     ) ERC20(_name, _symbol) {
         _scyDecimals = __scyDecimals;
-        _assetDecimals = __assetDecimals;
-        _assetId = __assetId;
+        assetDecimals = __assetDecimals;
+        assetId = __assetId;
     }
 
     /*///////////////////////////////////////////////////////////////
@@ -92,14 +92,6 @@ abstract contract SCYBase is ERC20, ISuperComposableYield, ReentrancyGuard {
 
     function decimals() public view virtual override(ERC20, IERC20Metadata) returns (uint8) {
         return _scyDecimals;
-    }
-
-    function assetDecimals() external view virtual returns (uint8) {
-        return _assetDecimals;
-    }
-
-    function assetId() external view virtual returns (bytes32) {
-        return _assetId;
     }
 
     function getBaseTokens() external view virtual override returns (address[] memory res);
