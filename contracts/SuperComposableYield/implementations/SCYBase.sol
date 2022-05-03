@@ -123,7 +123,7 @@ abstract contract SCYBase is ERC20, ISuperComposableYield {
         public
         virtual
         override
-        returns (uint256[] memory outAmounts);
+        returns (uint256[] memory rewardAmounts);
 
     function getRewardTokens() external view virtual override returns (address[] memory);
 

@@ -49,21 +49,21 @@ abstract contract RewardManager is IRewardManager {
     function _doTransferOutRewardsForUser(address user, address receiver)
         internal
         virtual
-        returns (uint256[] memory outAmounts)
+        returns (uint256[] memory rewardAmounts)
     {
         address[] memory rewardTokens = getRewardTokens();
 
-        outAmounts = new uint256[](rewardTokens.length);
+        rewardAmounts = new uint256[](rewardTokens.length);
         for (uint256 i = 0; i < rewardTokens.length; ++i) {
             address token = rewardTokens[i];
 
-            outAmounts[i] = userReward[user][token].accruedReward;
+            rewardAmounts[i] = userReward[user][token].accruedReward;
             userReward[user][token].accruedReward = 0;
 
-            globalReward[token].lastBalance -= outAmounts[i];
+            globalReward[token].lastBalance -= rewardAmounts[i];
 
-            if (outAmounts[i] != 0) {
-                IERC20(token).safeTransfer(receiver, outAmounts[i]);
+            if (rewardAmounts[i] != 0) {
+                IERC20(token).safeTransfer(receiver, rewardAmounts[i]);
             }
         }
     }
@@ -142,6 +142,6 @@ abstract contract RewardManager is IRewardManager {
         lastRewardUpdateBlock = block.number;
         return true;
     }
-    
+
     function _redeemExternalReward() internal virtual;
 }

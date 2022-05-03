@@ -62,7 +62,7 @@
 
     function updateGlobalRewards() external;
     function updateUserRewards(address user) external;
-    function redeemReward(address user) external returns (uint256[] memory outAmounts);
+    function redeemReward(address user) external returns (uint256[] memory rewardAmounts);
 
     function exchangeRateCurrent() external returns (uint256);
     function exchangeRateStored() external view returns (uint256);
