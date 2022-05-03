@@ -12,11 +12,26 @@ abstract contract SCYBase is ERC20, ISuperComposableYield {
     using SafeERC20 for IERC20;
     using Math for uint256;
 
-    event UpdateExchangeRate(uint256 exchangeRate);
-
     uint8 private immutable _scyDecimals;
     uint8 public immutable assetDecimals;
     bytes32 public immutable assetId;
+
+    event UpdateExchangeRate(uint256 exchangeRate);
+    event Deposit(
+        address indexed caller,
+        address indexed receiver,
+        address indexed baseTokenIn,
+        uint256 amountBaseIn,
+        uint256 amountScyOut
+    );
+    event Redeem(
+        address indexed caller,
+        address indexed receiver,
+        address indexed baseTokenOut,
+        uint256 amountScyIn,
+        uint256 amountBaseOut
+    );
+    event RedeemRewards(address indexed user, address[] rewardTokens, uint256[] rewardAmounts);
 
     constructor(
         string memory _name,
@@ -54,12 +69,14 @@ abstract contract SCYBase is ERC20, ISuperComposableYield {
         /// internal-state-changes
         /// ------------------------------------------------------------
         _mint(receiver, amountScyOut);
+
+        emit Deposit(msg.sender, receiver, baseTokenIn, amountBaseIn, amountScyOut);
     }
 
     function redeem(
         address receiver,
         address baseTokenOut,
-        uint256 amountScyRedeem,
+        uint256 amountScyIn,
         uint256 minAmountBaseOut
     ) external returns (uint256 amountBaseOut) {
         require(isValidBaseToken(baseTokenOut), "invalid base token");
@@ -67,15 +84,17 @@ abstract contract SCYBase is ERC20, ISuperComposableYield {
         /// ------------------------------------------------------------
         /// internal-state-changes
         /// ------------------------------------------------------------
-        _burn(msg.sender, amountScyRedeem);
+        _burn(msg.sender, amountScyIn);
 
         /// ------------------------------------------------------------
         /// ext-call
         /// ------------------------------------------------------------
-        amountBaseOut = _redeem(baseTokenOut, amountScyRedeem);
+        amountBaseOut = _redeem(baseTokenOut, amountScyIn);
         require(amountBaseOut >= minAmountBaseOut, "insufficient out");
 
         IERC20(baseTokenOut).safeTransfer(receiver, amountBaseOut);
+
+        emit Redeem(msg.sender, receiver, baseTokenOut, amountScyIn, amountBaseOut);
     }
 
     function _deposit(address token, uint256 amountBase)
@@ -95,6 +114,18 @@ abstract contract SCYBase is ERC20, ISuperComposableYield {
     function exchangeRateCurrent() external virtual override returns (uint256 res);
 
     function exchangeRateStored() external view virtual override returns (uint256 res);
+
+    /*///////////////////////////////////////////////////////////////
+                               REWARDS-RELATED
+    //////////////////////////////////////////////////////////////*/
+
+    function redeemReward(address user)
+        public
+        virtual
+        override
+        returns (uint256[] memory outAmounts);
+
+    function getRewardTokens() external view virtual override returns (address[] memory);
 
     /*///////////////////////////////////////////////////////////////
                 MISC METADATA FUNCTIONS

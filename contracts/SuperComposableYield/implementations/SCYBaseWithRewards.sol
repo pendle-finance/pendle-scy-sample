@@ -17,8 +17,6 @@ abstract contract SCYBaseWithRewards is SCYBase, RewardManager, ReentrancyGuard 
     using SafeERC20 for IERC20;
     using Math for uint256;
 
-    event RedeemReward(address indexed user, uint256[] rewardsOut);
-
     constructor(
         string memory _name,
         string memory _symbol,
@@ -41,18 +39,19 @@ abstract contract SCYBaseWithRewards is SCYBase, RewardManager, ReentrancyGuard 
         virtual
         override
         nonReentrant
-        returns (uint256[] memory outAmounts)
+        returns (uint256[] memory rewardAmounts)
     {
         _updateUserReward(user, balanceOf(user), totalSupply());
-        outAmounts = _doTransferOutRewardsForUser(user, user);
-        emit RedeemReward(user, outAmounts);
+        rewardAmounts = _doTransferOutRewardsForUser(user, user);
+
+        emit RedeemRewards(user, getRewardTokens(), rewardAmounts);
     }
 
     function getRewardTokens()
         public
         view
         virtual
-        override(ISuperComposableYield, RewardManager)
+        override(SCYBase, RewardManager)
         returns (address[] memory);
 
     /*///////////////////////////////////////////////////////////////
