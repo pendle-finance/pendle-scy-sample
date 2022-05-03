@@ -46,7 +46,7 @@
         uint256 minAmountBaseOut
     ) external returns (uint256 amountBaseOut);
 
-    function mint(
+    function deposit(
         address receiver,
         address baseTokenIn,
         uint256 amountBaseToPull,

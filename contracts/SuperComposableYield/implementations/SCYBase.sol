@@ -34,7 +34,7 @@ abstract contract SCYBase is ERC20, ISuperComposableYield, ReentrancyGuard {
                     DEPOSIT/REDEEM USING BASE TOKENS
     //////////////////////////////////////////////////////////////*/
 
-    function mint(
+    function deposit(
         address receiver,
         address baseTokenIn,
         uint256 amountBaseIn,
@@ -63,6 +63,7 @@ abstract contract SCYBase is ERC20, ISuperComposableYield, ReentrancyGuard {
         amountBaseOut = _redeem(baseTokenOut, amountScyRedeem);
         require(amountBaseOut >= minAmountBaseOut, "insufficient out");
 
+        // Need to transfer after burning or ERC777s could reenter.
         IERC20(baseTokenOut).safeTransfer(receiver, amountBaseOut);
     }
 
