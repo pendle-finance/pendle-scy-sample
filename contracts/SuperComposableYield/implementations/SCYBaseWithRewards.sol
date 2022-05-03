@@ -13,7 +13,7 @@ import "../../libraries/math/Math.sol";
 satisfy this restriction is AaveV2's aToken
 
 */
-abstract contract SCYBaseWithRewards is SCYBase, RewardManager {
+abstract contract SCYBaseWithRewards is SCYBase, RewardManager, ReentrancyGuard {
     using SafeERC20 for IERC20;
     using Math for uint256;
 

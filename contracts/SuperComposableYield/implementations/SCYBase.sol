@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "../../libraries/math/Math.sol";
 import "../SCYUtils.sol";
 
-abstract contract SCYBase is ERC20, ISuperComposableYield, ReentrancyGuard {
+abstract contract SCYBase is ERC20, ISuperComposableYield {
     using SafeERC20 for IERC20;
     using Math for uint256;
 
@@ -39,14 +39,20 @@ abstract contract SCYBase is ERC20, ISuperComposableYield, ReentrancyGuard {
         address baseTokenIn,
         uint256 amountBaseIn,
         uint256 minAmountScyOut
-    ) external nonReentrant returns (uint256 amountScyOut) {
+    ) external returns (uint256 amountScyOut) {
         require(isValidBaseToken(baseTokenIn), "invalid base token");
 
+        /// ------------------------------------------------------------
+        /// ext-call before internal-state-changes else ERC777 can reenter
+        /// ------------------------------------------------------------
         IERC20(baseTokenIn).safeTransferFrom(msg.sender, address(this), amountBaseIn);
 
         amountScyOut = _deposit(baseTokenIn, amountBaseIn);
         require(amountScyOut >= minAmountScyOut, "insufficient out");
 
+        /// ------------------------------------------------------------
+        /// internal-state-changes
+        /// ------------------------------------------------------------
         _mint(receiver, amountScyOut);
     }
 
@@ -55,15 +61,20 @@ abstract contract SCYBase is ERC20, ISuperComposableYield, ReentrancyGuard {
         address baseTokenOut,
         uint256 amountScyRedeem,
         uint256 minAmountBaseOut
-    ) external nonReentrant returns (uint256 amountBaseOut) {
+    ) external returns (uint256 amountBaseOut) {
         require(isValidBaseToken(baseTokenOut), "invalid base token");
 
+        /// ------------------------------------------------------------
+        /// internal-state-changes
+        /// ------------------------------------------------------------
         _burn(msg.sender, amountScyRedeem);
 
+        /// ------------------------------------------------------------
+        /// ext-call
+        /// ------------------------------------------------------------
         amountBaseOut = _redeem(baseTokenOut, amountScyRedeem);
         require(amountBaseOut >= minAmountBaseOut, "insufficient out");
 
-        // Need to transfer after burning or ERC777s could reenter.
         IERC20(baseTokenOut).safeTransfer(receiver, amountBaseOut);
     }
 
