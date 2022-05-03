@@ -14,8 +14,6 @@
 
 pragma solidity 0.8.9;
 
-import "./LogExpMath.sol";
-
 /* solhint-disable private-vars-leading-underscore, reason-string */
 
 library Math {
@@ -73,7 +71,7 @@ library Math {
             }
         }
     }
-    
+
     function abs(int256 x) internal pure returns (uint256) {
         return uint256(x > 0 ? x : -x);
     }
