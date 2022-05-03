@@ -103,6 +103,10 @@ contract PendleAaveV3SCY is SCYBaseWithRewards {
         res = (token == underlying || token == aToken);
     }
 
+    function underlyingYieldToken() external view virtual override returns (address) {
+        return aToken;
+    }
+
     /*///////////////////////////////////////////////////////////////
                                REWARDS-RELATED
     //////////////////////////////////////////////////////////////*/

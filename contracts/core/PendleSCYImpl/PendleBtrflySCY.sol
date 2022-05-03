@@ -97,6 +97,10 @@ contract PendleBtrflyScy is SCYBase {
         return token == BTRFLY || token == xBTRFLY || token == wxBTRFLY;
     }
 
+    function underlyingYieldToken() external view virtual override returns (address) {
+        return wxBTRFLY;
+    }
+
     /*///////////////////////////////////////////////////////////////
                                REWARDS-RELATED
     //////////////////////////////////////////////////////////////*/

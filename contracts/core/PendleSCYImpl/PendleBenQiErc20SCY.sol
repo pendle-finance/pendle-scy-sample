@@ -116,6 +116,10 @@ contract PendleBenQiErc20SCY is SCYBaseWithRewards {
         res = (token == underlying || token == qiToken);
     }
 
+    function underlyingYieldToken() external view virtual override returns (address) {
+        return qiToken;
+    }
+
     /*///////////////////////////////////////////////////////////////
                                REWARDS-RELATED
     //////////////////////////////////////////////////////////////*/

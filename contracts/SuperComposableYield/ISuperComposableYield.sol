@@ -58,5 +58,12 @@ interface ISuperComposableYield is IERC20Metadata {
 
     function getRewardTokens() external view returns (address[] memory);
 
+    /// ------------------------------------------------------------
+    /// metadata
+    /// ------------------------------------------------------------
     function assetDecimals() external view returns (uint8);
+
+    function assetId() external view returns (bytes32);
+
+    function underlyingYieldToken() external view returns (address);
 }
