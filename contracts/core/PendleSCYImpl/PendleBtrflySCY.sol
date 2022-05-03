@@ -12,7 +12,7 @@ contract PendleBtrflyScy is SCYBase {
     address public immutable xBTRFLY;
     address public immutable wxBTRFLY;
 
-    uint256 public override pricePerAssetStored;
+    uint256 public override exchangeRateStored;
 
     constructor(
         string memory _name,
@@ -73,11 +73,11 @@ contract PendleBtrflyScy is SCYBase {
                                SCY-INDEX
     //////////////////////////////////////////////////////////////*/
 
-    function pricePerAssetCurrent() public virtual override returns (uint256) {
+    function exchangeRateCurrent() public virtual override returns (uint256) {
         uint256 res = IWXBTRFLY(wxBTRFLY).xBTRFLYValue(Math.ONE);
 
-        pricePerAssetStored = res;
-        emit UpdatePricePerAsset(res);
+        exchangeRateStored = res;
+        emit UpdateExchangeRate(res);
 
         return res;
     }

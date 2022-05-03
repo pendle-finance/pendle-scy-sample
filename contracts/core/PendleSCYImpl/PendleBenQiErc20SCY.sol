@@ -15,7 +15,7 @@ contract PendleBenQiErc20SCY is SCYBaseWithRewards {
     address public immutable comptroller;
     address public immutable qiToken;
 
-    uint256 public override pricePerAssetStored;
+    uint256 public override exchangeRateStored;
 
     constructor(
         string memory _name,
@@ -87,13 +87,13 @@ contract PendleBenQiErc20SCY is SCYBaseWithRewards {
                                SCY-INDEX
     //////////////////////////////////////////////////////////////*/
 
-    function pricePerAssetCurrent() public virtual override returns (uint256) {
+    function exchangeRateCurrent() public virtual override returns (uint256) {
         uint256 res = IQiToken(qiToken).exchangeRateCurrent();
 
-        pricePerAssetStored = res;
-        emit UpdatePricePerAsset(res);
+        exchangeRateStored = res;
+        emit UpdateExchangeRate(res);
 
-        return pricePerAssetStored;
+        return exchangeRateStored;
     }
 
     function getRewardTokens() public view override returns (address[] memory res) {

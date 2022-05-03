@@ -64,8 +64,8 @@
     function updateUserRewards(address user) external;
     function redeemReward(address user) external returns (uint256[] memory outAmounts);
 
-    function pricePerAssetCurrent() external returns (uint256);
-    function pricePerAssetStored() external view returns (uint256);
+    function exchangeRateCurrent() external returns (uint256);
+    function exchangeRateStored() external view returns (uint256);
 
     function getBaseTokens() external view returns (address[] memory);
     function isValidBaseToken(address token) external view returns (bool);
