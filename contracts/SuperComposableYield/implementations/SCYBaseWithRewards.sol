@@ -34,7 +34,7 @@ abstract contract SCYBaseWithRewards is SCYBase, RewardManager, ReentrancyGuard 
                                REWARDS-RELATED
     //////////////////////////////////////////////////////////////*/
 
-    function redeemReward(address user)
+    function harvest(address user)
         public
         virtual
         override
@@ -44,7 +44,7 @@ abstract contract SCYBaseWithRewards is SCYBase, RewardManager, ReentrancyGuard 
         _updateUserReward(user, balanceOf(user), totalSupply());
         rewardAmounts = _doTransferOutRewardsForUser(user, user);
 
-        emit RedeemRewards(user, getRewardTokens(), rewardAmounts);
+        emit harvests(user, getRewardTokens(), rewardAmounts);
     }
 
     function getRewardTokens()

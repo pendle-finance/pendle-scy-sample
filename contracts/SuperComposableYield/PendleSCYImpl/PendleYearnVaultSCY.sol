@@ -3,12 +3,14 @@ pragma solidity 0.8.9;
 
 import "../../SuperComposableYield/implementations/SCYBase.sol";
 import "../../interfaces/IYearnVault.sol";
+import "../../interfaces/IQiERC20.sol";
 
 contract PendleYearnVaultScy is SCYBase {
     using SafeERC20 for IERC20;
 
     address public immutable underlying;
     address public immutable yvToken;
+    address public cToken;
 
     uint256 public override exchangeRateStored;
 
@@ -39,11 +41,16 @@ contract PendleYearnVaultScy is SCYBase {
     {
         if (token == yvToken) {
             amountScyOut = amountBase;
-        } else {
-            // token == underlying
+        } else if (token == cToken || token == underlying) {
+            uint256 amountUnderlying;
+            if (token == cToken) {
+                uint256 successful = IQiErc20(cToken).redeem(amountBase);
+                require(successful == 0, "redeem failed");
+                amountUnderlying = IERC20(underlying).balanceOf(address(this));
+            }
             uint256 preBalance = IERC20(yvToken).balanceOf(address(this));
             IYearnVault(yvToken).deposit(amountBase);
-            amountBase = IERC20(yvToken).balanceOf(address(this)) - preBalance; // 1 yvToken = 1 SCY
+            amountScyOut = IERC20(yvToken).balanceOf(address(this)) - preBalance; // 1 yvToken = 1 SCY
         }
     }
 
@@ -80,9 +87,11 @@ contract PendleYearnVaultScy is SCYBase {
     //////////////////////////////////////////////////////////////*/
 
     function getBaseTokens() public view virtual override returns (address[] memory res) {
-        res = new address[](2);
+        res = new address[](3);
         res[0] = underlying;
         res[1] = yvToken;
+        res[2] = cToken;
+        // SCY-yvToken
     }
 
     function isValidBaseToken(address token) public view virtual override returns (bool) {
@@ -98,7 +107,7 @@ contract PendleYearnVaultScy is SCYBase {
     //////////////////////////////////////////////////////////////*/
 
     //solhint-disable-next-line no-empty-blocks
-    function redeemReward(address user) public virtual override returns (uint256[] memory) {}
+    function harvest(address user) public virtual override returns (uint256[] memory) {}
 
     function getRewardTokens() public view virtual override returns (address[] memory res) {
         res = new address[](0);

@@ -31,7 +31,7 @@ abstract contract SCYBase is ERC20, ISuperComposableYield {
         uint256 amountScyIn,
         uint256 amountBaseOut
     );
-    event RedeemRewards(address indexed user, address[] rewardTokens, uint256[] rewardAmounts);
+    event harvests(address indexed user, address[] rewardTokens, uint256[] rewardAmounts);
 
     constructor(
         string memory _name,
@@ -119,7 +119,7 @@ abstract contract SCYBase is ERC20, ISuperComposableYield {
                                REWARDS-RELATED
     //////////////////////////////////////////////////////////////*/
 
-    function redeemReward(address user)
+    function harvest(address user)
         public
         virtual
         override

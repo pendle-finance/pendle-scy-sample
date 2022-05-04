@@ -39,7 +39,7 @@ interface ISuperComposableYield is IERC20Metadata {
         uint256 minAmountBaseOut
     ) external returns (uint256 amountBaseOut);
 
-    function redeemReward(address user) external returns (uint256[] memory rewardAmounts);
+    function harvest(address user) external returns (uint256[] memory rewardAmounts);
 
     /**
     * @notice exchangeRateCurrent * scyBalance / 1e18 must return the asset balance of the account
