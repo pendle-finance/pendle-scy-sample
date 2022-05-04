@@ -33,55 +33,54 @@
 - So, what’s the Super Composable Yield **token standard**?
     - These are the tentative functions on top of ERC20s in Super Composable Yield standard:
 
-    ```jsx
-    function mintNoPull(
-        address receiver,
-        address baseTokenIn,
-        uint256 minAmountScyOut
-    ) external returns (uint256 amountScyOut);
+    ```solidity
+    interface ISuperComposableYield is IERC20Metadata {
+        function deposit(
+            address receiver,
+            address baseTokenIn,
+            uint256 amountBaseIn,
+            uint256 minAmountScyOut
+        ) external returns (uint256 amountScyOut);
 
-    function redeemNoPull(
-        address receiver,
-        address baseTokenOut,
-        uint256 minAmountBaseOut
-    ) external returns (uint256 amountBaseOut);
+        function redeem(
+            address receiver,
+            address baseTokenOut,
+            uint256 amountScyIn,
+            uint256 minAmountBaseOut
+        ) external returns (uint256 amountBaseOut);
 
-    function deposit(
-        address receiver,
-        address baseTokenIn,
-        uint256 amountBaseToPull,
-        uint256 minAmountScyOut
-    ) external returns (uint256 amountScyOut);
+        function harvest(address user) external returns (uint256[] memory rewardAmounts);
 
-    function redeem(
-        address receiver,
-        address baseTokenOut,
-        uint256 amountScyToPull,
-        uint256 minAmountBaseOut
-    ) external returns (uint256 amountBaseOut);
+        /**
+            * @notice exchangeRateCurrent * scyBalance / 1e18 must return the asset balance of the account
+            * @notice vice-versa, if a user uses some amount of tokens equivalent to X asset, the amount of scy
+            he can mint must be X * exchangeRateCurrent / 1e18
+            * @dev SCYUtils's assetToScy & scyToAsset should be used instead of raw multiplication
+            & division
+        */
+        function exchangeRateCurrent() external returns (uint256);
 
-    function updateGlobalRewards() external;
-    function updateUserRewards(address user) external;
-    function redeemReward(address user) external returns (uint256[] memory rewardAmounts);
+        function exchangeRateStored() external view returns (uint256);
 
-    function exchangeRateCurrent() external returns (uint256);
-    function exchangeRateStored() external view returns (uint256);
+        function underlyingYieldToken() external view returns (address);
 
-    function getBaseTokens() external view returns (address[] memory);
-    function isValidBaseToken(address token) external view returns (bool);
-    function getRewardTokens() external view returns (address[] memory);
+        function getBaseTokens() external view returns (address[] memory);
 
-    // Metadata
-    function assetDecimals() external view returns (uint8);
-    function assetId() external view returns (bytes32);
+        function isValidBaseToken(address token) external view returns (bool);
+
+        function getRewardTokens() external view returns (address[] memory);
+
+        function assetDecimals() external view returns (uint8);
+
+        event Deposit(address indexed caller, address indexed receiver, address indexed baseTokenIn, uint256 amountBaseIn, uint256 amountScyOut);
+
+        event Redeem(address indexed caller, address indexed receiver, address indexed baseTokenOut, uint256 amountScyIn, uint256 amountBaseOut);
+
+        event Harvest(address indexed caller, address indexed user, uint256[] rewardAmounts);
+    }
     ```
 
-## Why not ERC4626?
+### Additional Info
 
-ERC-4626 is a standard for vaults, which is not flexible enough to include many other yield generating mechanisms
-
-- The inputs to mint an ERC-4626 must be the same as the units for accounting for value
-    - The LP-token class cannot conform to this standard. This will effectively exclude Uniswap-fork’s LP, Balancer’s LP, Curve’s LP ....
-    - Any future yield-generating protocols that allow the deposit of multiple baseTokens will also not be compatible with ERC4626
-- It also means that ERC4626 cannot be used to wrap existing yield tokens. Compound’s cToken, AaveV3’s aToken is still very widely used nowadays
-- The standard also doesn’t take into account reward tokens, which is also widely given together with the yield. This means for yield-trading protocols OR vault protocol, a customised adapter to account for rewards of each token will still be required
+More information can be found on this Notion doc.
+https://www.notion.so/pendle/Super-Composable-Yield-How-it-works-00e7d9f8e6de41af8108490c458101c2
