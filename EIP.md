@@ -38,10 +38,10 @@ All SCY tokens:
 - **base tokens**: Tokens that can be converted into accounting assets to enter the pool. When exiting the pool, accounting asset can be converted back into base tokens again. Each SCY could accept several possible base tokens.
 - **pool**: In each yield generating mechanism, there is a central pool that contains value contributed by users.
 - **accounting asset**: Is a unit to measure the value of the pool. At time *t*, the pool has a total value of *A(t)* accounting assets shares is a unit that represents ownership of the pool. At time *t*, there are *S(t)* shares in total.
-- **reward tokens**: Over time, the pool earns $n_{rewards}$ types of reward tokens $(n_{rewards} \ge 0)$. At time *t*, $R_i(t)$ is the amount of reward token *i* that has accumulated for the pool since *t = 0.*
+	- **reward tokens**: Over time, the pool earns n<sub>rewards</sub> types of reward tokens (n<sub>rewards</sub> ≥ 0). At time *t*, R<sub>i</sub>(t) is the amount of reward token *i* that has accumulated for the pool since *t = 0.*
 - **exchangeRate**: At time *t*, the exchange rate *E(t)* is simply how many accounting assets each
-shares is worth $E(t) = \frac{A(t)}{S(t)}$.
-- **users**: At time *t*, each user *u* has $s_u(t)$ shares in the pool, which is worth $a_u(t) = s_u(t) \cdot E(t)$ accounting assets. Until time *t*, user *u* is entitled to receive a total of $r_{u_i}(t)$ reward token *i*.
+shares is worth E(t) = A(t) / S(t).
+- **users**: At time *t*, each user *u* has s<sub>u</sub>(t) shares in the pool, which is worth a<sub>u</sub>(t) = s<sub>u</sub>(t) * E(t) accounting assets. Until time *t*, user *u* is entitled to receive a total of r<sub>u<sub>i</sub></sub>(t) reward token *i*.
 
 ### Example GYGPs:
 
@@ -56,45 +56,45 @@ shares is worth $E(t) = \frac{A(t)}{S(t)}$.
 
 ```solidity
 interface IERCXXX is IERC20 {
-    function deposit(
-        address receiver,
-        address baseTokenIn,
-        uint256 amountBaseIn,
-        uint256 minAmountScyOut
-    ) external returns (uint256 amountScyOut);
+	function deposit(
+		address receiver,
+		address baseTokenIn,
+		uint256 amountBaseIn,
+		uint256 minAmountScyOut
+	) external returns (uint256 amountScyOut);
 
-    function redeem(
-        address receiver,
-        address baseTokenOut,
-        uint256 amountScyIn,
-        uint256 minAmountBaseOut
-    ) external returns (uint256 amountBaseOut);
+	function redeem(
+		address receiver,
+		address baseTokenOut,
+		uint256 amountScyIn,
+		uint256 minAmountBaseOut
+	) external returns (uint256 amountBaseOut);
 
-    function harvest(address user) external returns (uint256[] memory rewardAmounts);
+	function harvest(address user) external returns (uint256[] memory rewardAmounts);
 
-    function exchangeRateCurrent() external returns (uint256);
+	function exchangeRateCurrent() external returns (uint256);
 
-    function exchangeRateStored() external view returns (uint256);
+	function exchangeRateStored() external view returns (uint256);
 
-		function underlyingYieldToken() external view returns (address);
+	function underlyingYieldToken() external view returns (address);
 
-    function getBaseTokens() external view returns (address[] memory);
+	function getBaseTokens() external view returns (address[] memory);
 
-    function isValidBaseToken(address token) external view returns (bool);
+	function isValidBaseToken(address token) external view returns (bool);
 
-    function getRewardTokens() external view returns (address[] memory);
+	function getRewardTokens() external view returns (address[] memory);
 
-    function assetDecimals() external view returns (uint8);
+	function assetDecimals() external view returns (uint8);
 
-		event Deposit(address indexed caller, address indexed receiver, address indexed baseTokenIn, uint256 amountBaseIn, uint256 amountScyOut);
+	event Deposit(address indexed caller, address indexed receiver, address indexed baseTokenIn, uint256 amountBaseIn, uint256 amountScyOut);
 
-		event Redeem(address indexed caller, address indexed receiver, address indexed baseTokenOut, uint256 amountScyIn, uint256 amountBaseOut);
+	event Redeem(address indexed caller, address indexed receiver, address indexed baseTokenOut, uint256 amountScyIn, uint256 amountBaseOut);
 
-		event Harvest(address indexed caller, address indexed user, uint256[] rewardAmounts);
+	event Harvest(address indexed caller, address indexed user, uint256[] rewardAmounts);
 }
 ```
 
-### Functions:
+### Methods:
 
 ```solidity
 function deposit(
@@ -105,11 +105,11 @@ function deposit(
 ) external returns (uint256 amountScyOut);
 ```
 
-This function will convert the exact base asset into some worth of accounting assets and deposit this amount into the pool for the recipient, who will receive amountScyOut of SCY tokens (shares). Most implementations will require pre-approval of the SCY contract with SCY’s base token.
+This method will convert the exact base asset into some worth of accounting assets and deposit this amount into the pool for the recipient, who will receive amountScyOut of SCY tokens (shares). Most implementations will require pre-approval of the SCY contract with SCY’s base token.
 
 - **MUST** emit the `Deposit` event.
 - **MUST** support ERC-20’s `approve` / `transferFrom` flow where *baseTokenIn* are taken from receiver directly (as msg.sender) or if the msg.sender has ERC-20 approved allowance over the base asset of the receiver.
-- **MUST** revert if $amountScyOut \lt minAmountScyOut$ (due to deposit limit being reached, slippage, or the user not approving enough *baseTokenIn* to the SCY contract, etc).
+- **MUST** revert if *amountScyOut < minAmountScyOut* (due to deposit limit being reached, slippage, or the user not approving enough *baseTokenIn* to the SCY contract, etc).
 
 ```solidity
 function redeem(
@@ -120,17 +120,17 @@ function redeem(
 ) external returns (uint256 amountBaseOut);
 ```
 
-This function will redeem exact shares from the pool. The accounting assets is converted into amountBaseOut of baseTokenOut. Most implementations will require pre-approval of the SCY contract with the SCY token.
+This method will redeem exact shares from the pool. The accounting assets is converted into amountBaseOut of baseTokenOut. Most implementations will require pre-approval of the SCY contract with the SCY token.
 
 - **MUST** emit the `Redeem` event.
 - **MUST** support ERC-20’s `approve` / `transferFrom` flow where the shares are burned from receiver directly (as msg.sender) or if the msg.sender has ERC-20 approved allowance over the shares of the receiver.
-- **MUST** revert if $amountScyOut \lt minAmountBaseOut$ (due to redeem limit being reached, slippage, or the user not approving enough *amountScyIn* to the SCY contract, etc).
+- **MUST** revert if *amountScyOut < minAmountBaseOut* (due to redeem limit being reached, slippage, or the user not approving enough *amountScyIn* to the SCY contract, etc).
 
 ```solidity
 function harvest(address user) external returns (uint256[] memory rewardAmounts);
 ```
 
-This function sends the harvested rewards for the user.
+This method sends the harvested rewards for the user.
 
 - **MUST** emit the `Harvest` event.
 - **MAY** return one or multiple rewards to the user.
@@ -140,9 +140,9 @@ This function sends the harvested rewards for the user.
 function exchangeRateCurrent() external returns (uint256);
 ```
 
-This function updates and returns the latest exchange rate, which is the exchange rate from 1 SCY token into accounting asset.
+This method updates and returns the latest exchange rate, which is the exchange rate from 1 SCY token into accounting asset.
 
-- **MUST** result to the asset balance of the user for $exchangeRateCurrent \cdot scyBalance$.
+- **MUST** result to the asset balance of the user for *exchangeRateCurrent * scyBalance*.
 - **MUST NOT** include fees that are charged against the underlying yield token in the SCY contract.
 - **MUST NOT** revert.
 - **SHOULD** use SCYUtil.sol’s `assetToScy` and `scyToAssset` instead of raw multiplication or division.
@@ -151,9 +151,9 @@ This function updates and returns the latest exchange rate, which is the exchang
 function exchangeRateStored() external view returns (uint256);
 ```
 
-This read-only function returns the last saved value of the exchange rate.
+This read-only method returns the last saved value of the exchange rate.
 
-- **MUST** result to the asset balance of the user for $exchangeRateStored \cdot scyBalance$.
+- **MUST** result to the asset balance of the user for *exchangeRateStored * scyBalance*.
 - **MUST NOT** include fees that are charged against the underlying yield token in the SCY contract.
 - **MUST NOT** revert.
 
@@ -161,7 +161,7 @@ This read-only function returns the last saved value of the exchange rate.
 function underlyingYieldToken() external view returns (address);
 ```
 
-This read-only function returns the underlying yield-generating token (representing a GYGP) that was wrapped into a SCY token.
+This read-only method returns the underlying yield-generating token (representing a GYGP) that was wrapped into a SCY token.
 
 - **MUST** return an ERC-20 token address.
 - **MUST NOT** revert.
@@ -172,7 +172,7 @@ This read-only function returns the underlying yield-generating token (represent
 function getBaseTokens() external view returns (address[] memory);
 ```
 
-This read-only function returns the list of all base tokens that can be used to Deposit into the SCY contract.
+This read-only method returns the list of all base tokens that can be used to Deposit into the SCY contract.
 
 - **MUST** return ERC-20 token addresses.
 - **MUST NOT** revert.
@@ -182,7 +182,7 @@ This read-only function returns the list of all base tokens that can be used to 
 function isValidBaseToken(address token) external view returns (bool);
 ```
 
-This read-only function checks whether a token address entered is an base accepted token that can be used to mint SCY.
+This read-only method checks whether a token address entered is an base accepted token that can be used to mint SCY.
 
 - **MUST NOT** revert.
 
@@ -190,7 +190,7 @@ This read-only function checks whether a token address entered is an base accept
 function getRewardTokens() external view returns (address[] memory);
 ```
 
-This read-only function returns a list of all reward tokens.
+This read-only method returns a list of all reward tokens.
 
 - **MUST** return ERC-20 token addresses.
 - **MUST NOT** revert.
@@ -200,7 +200,7 @@ This read-only function returns a list of all reward tokens.
 function assetDecimals() external view returns (uint8);
 ```
 
-This read-only function returns the decimals of the accounting asset.
+This read-only method returns the decimals of the accounting asset.
 
 - **MUST** reflect the underlying asset’s decimals if at all possible in order to eliminate any possible source of confusion or be deemed malicious.
 - **MUST NOT** revert.
@@ -209,7 +209,7 @@ This read-only function returns the decimals of the accounting asset.
 function assetId() external view returns (bytes32);
 ```
 
-This read-only function returns a string to identify the accounting asset being used in the SCY token.
+This read-only method returns a string to identify the accounting asset being used in the SCY token.
 
 - **MUST NOT** revert.
 - **MAY** simply be the token address converted to bytes32, if the accounting asset is a simple token asset. (e.g. for SCY-cDAI, the `assetId` is the DAI address)
@@ -223,7 +223,7 @@ event Deposit(address indexed caller, address indexed receiver, address indexed 
 
 `caller` has converted exact base assets into SCY (shares), and transferred those SCY to `receiver`.
 
-- **MUST** be emitted when base assets are deposited into the SCY contract via `deposit` function.
+- **MUST** be emitted when base assets are deposited into the SCY contract via `deposit` method.
 
 ```solidity
 event Redeem(address indexed caller, address indexed receiver, address indexed baseTokenOut, uint256 amountScyIn, uint256 amountBaseOut);
@@ -231,7 +231,7 @@ event Redeem(address indexed caller, address indexed receiver, address indexed b
 
 `caller` has converted exact SCY (shares) into base assets, and transferred those base assets to `receiver`.
 
-- **MUST** be emitted when base assets are redeemed from the SCY contract via `redeem` function.
+- **MUST** be emitted when base assets are redeemed from the SCY contract via `redeem` method.
 
 ```solidity
 event Harvest(address indexed caller, address indexed user, uint256[] rewardAmounts);
@@ -239,9 +239,9 @@ event Harvest(address indexed caller, address indexed user, uint256[] rewardAmou
 
 `caller` harvested user rewards and transferred them to the user.
 
-- **MUST** be emitted when rewards are harvested from the SCY contract via `harvest` function.
+- **MUST** be emitted when rewards are harvested from the SCY contract via `harvest` method.
 
-**"SCY" Word Choice:**
+### "SCY" Word Choice:
 
 "SCY" (pronunciation: */sʌɪ/*) was acceptable and widely usable to describe a broad universe of composable yield-bearing digital assets.
 
@@ -293,7 +293,7 @@ See [PendleYearnVaultSCY](https://github.com/pendle-finance/pendle-scy-sample/bl
 
 Malicious implementations which conform to the interface can put users at risk. It is recommended that all integrators to review the implementation as to avoid possible exploits and users losing funds.
 
-The function `exchangeRateStored` returns an estimate useful for display purposes off-chain, and do not confer to the exact exchange rate of price share. Should accuracy be needed, `exchangeRateCurrent` should be used instead, and in addition, will update `exchangeRateStored`.
+The method `exchangeRateStored` returns an estimate useful for display purposes off-chain, and do not confer to the exact exchange rate of price share. Should accuracy be needed, `exchangeRateCurrent` should be used instead, and in addition, will update `exchangeRateStored`.
 
 `assetDecimals` must strongly reflect the underlying asset’s decimals if at all possible in order to eliminate any possible source of confusion or be deemed malicious.
 
