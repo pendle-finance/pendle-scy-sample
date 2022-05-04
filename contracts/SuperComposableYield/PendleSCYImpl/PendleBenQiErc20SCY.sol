@@ -51,7 +51,7 @@ contract PendleBenQiErc20SCY is SCYBaseWithRewards {
                     DEPOSIT/REDEEM USING BASE TOKENS
     //////////////////////////////////////////////////////////////*/
 
-    function _deposit(address token, uint256 amountBase)
+    function _toUnderlyingYieldToken(address token, uint256 amountBase)
         internal
         virtual
         override
@@ -68,7 +68,7 @@ contract PendleBenQiErc20SCY is SCYBaseWithRewards {
         }
     }
 
-    function _redeem(address token, uint256 amountScy)
+    function _toBaseToken(address token, uint256 amountScy)
         internal
         virtual
         override

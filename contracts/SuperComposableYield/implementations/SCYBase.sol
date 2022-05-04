@@ -62,7 +62,7 @@ abstract contract SCYBase is ERC20, ISuperComposableYield {
         /// ------------------------------------------------------------
         IERC20(baseTokenIn).safeTransferFrom(msg.sender, address(this), amountBaseIn);
 
-        amountScyOut = _deposit(baseTokenIn, amountBaseIn);
+        amountScyOut = _toUnderlyingYieldToken(baseTokenIn, amountBaseIn);
         require(amountScyOut >= minAmountScyOut, "insufficient out");
 
         /// ------------------------------------------------------------
@@ -89,7 +89,7 @@ abstract contract SCYBase is ERC20, ISuperComposableYield {
         /// ------------------------------------------------------------
         /// ext-call
         /// ------------------------------------------------------------
-        amountBaseOut = _redeem(baseTokenOut, amountScyIn);
+        amountBaseOut = _toBaseToken(baseTokenOut, amountScyIn);
         require(amountBaseOut >= minAmountBaseOut, "insufficient out");
 
         IERC20(baseTokenOut).safeTransfer(receiver, amountBaseOut);
@@ -97,12 +97,12 @@ abstract contract SCYBase is ERC20, ISuperComposableYield {
         emit Redeem(msg.sender, receiver, baseTokenOut, amountScyIn, amountBaseOut);
     }
 
-    function _deposit(address token, uint256 amountBase)
+    function _toUnderlyingYieldToken(address token, uint256 amountBase)
         internal
         virtual
         returns (uint256 amountScyOut);
 
-    function _redeem(address token, uint256 amountScy)
+    function _toBaseToken(address token, uint256 amountScy)
         internal
         virtual
         returns (uint256 amountTokenOut);
