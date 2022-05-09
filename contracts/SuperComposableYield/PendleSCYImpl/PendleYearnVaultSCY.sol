@@ -3,7 +3,7 @@ pragma solidity 0.8.9;
 
 import "../../SuperComposableYield/implementations/SCYBase.sol";
 import "../../interfaces/IYearnVault.sol";
-import "../../interfaces/IQiERC20.sol";
+import "../../interfaces/IQiErc20.sol";
 
 contract PendleYearnVaultScy is SCYBase {
     using SafeERC20 for IERC20;
