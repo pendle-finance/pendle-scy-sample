@@ -83,7 +83,7 @@ contract PendleStEthSCY is SCYBase {
     }
 
     function underlyingYieldToken() external view virtual override returns (address) {
-        return stETH;
+        return wstETH;
     }
 
     /*///////////////////////////////////////////////////////////////
