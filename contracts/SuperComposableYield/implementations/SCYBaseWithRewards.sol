@@ -35,8 +35,8 @@ abstract contract SCYBaseWithRewards is SCYBase, RewardManager, ReentrancyGuard 
         nonReentrant
         returns (uint256[] memory rewardAmounts)
     {
-        _updateUserReward(user, balanceOf(user), totalSupply());
-        rewardAmounts = _doTransferOutRewardsForUser(user, user);
+        _updateAndDistributeReward(user);
+        rewardAmounts = _doTransferOutRewards(user, user);
 
         emit Harvests(user, getRewardTokens(), rewardAmounts);
     }
@@ -48,6 +48,16 @@ abstract contract SCYBaseWithRewards is SCYBase, RewardManager, ReentrancyGuard 
         override(SCYBase, RewardManager)
         returns (address[] memory);
 
+    /// @dev to be overriden if there is rewards
+    function _rewardSharesTotal() internal virtual override returns (uint256) {
+        return totalSupply();
+    }
+
+    /// @dev to be overriden if there is rewards
+    function _rewardSharesUser(address user) internal virtual override returns (uint256) {
+        return balanceOf(user);
+    }
+
     /*///////////////////////////////////////////////////////////////
                             TRANSFER HOOKS
     //////////////////////////////////////////////////////////////*/
@@ -56,9 +66,8 @@ abstract contract SCYBaseWithRewards is SCYBase, RewardManager, ReentrancyGuard 
         address to,
         uint256 /*amount*/
     ) internal virtual override {
-        address[] memory rewardTokens = getRewardTokens();
-        _updateGlobalReward(rewardTokens, totalSupply());
-        if (from != address(0)) _updateUserRewardSkipGlobal(rewardTokens, from, balanceOf(from));
-        if (to != address(0)) _updateUserRewardSkipGlobal(rewardTokens, to, balanceOf(to));
+        _updateRewardIndex();
+        if (from != address(0) && from != address(this)) _distributeUserReward(from);
+        if (to != address(0) && to != address(this)) _distributeUserReward(to);
     }
 }
