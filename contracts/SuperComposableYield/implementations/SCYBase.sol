@@ -16,22 +16,18 @@ abstract contract SCYBase is ERC20, ISuperComposableYield {
     uint8 public immutable assetDecimals;
     bytes32 public immutable assetId;
 
-    event UpdateExchangeRate(uint256 exchangeRate);
-    event Deposit(
-        address indexed caller,
-        address indexed receiver,
-        address indexed baseTokenIn,
-        uint256 amountBaseIn,
-        uint256 amountScyOut
-    );
-    event Redeem(
-        address indexed caller,
-        address indexed receiver,
-        address indexed baseTokenOut,
-        uint256 amountScyIn,
-        uint256 amountBaseOut
-    );
-    event harvests(address indexed user, address[] rewardTokens, uint256[] rewardAmounts);
+    mapping(address => uint256) public lastTxHoldings;
+
+    modifier updateLastTxHoldings() {
+        _;
+        address[] memory holdings = getHoldings();
+        for (uint256 i = 0; i < holdings.length; ) {
+            lastTxHoldings[holdings[i]] = IERC20(holdings[i]).balanceOf(address(this));
+            unchecked {
+                i++;
+            }
+        }
+    }
 
     constructor(
         string memory _name,
@@ -51,58 +47,52 @@ abstract contract SCYBase is ERC20, ISuperComposableYield {
 
     function deposit(
         address receiver,
-        address baseTokenIn,
-        uint256 amountBaseIn,
-        uint256 minAmountScyOut
-    ) external returns (uint256 amountScyOut) {
-        require(isValidBaseToken(baseTokenIn), "invalid base token");
+        address tokenIn,
+        uint256 amountTokenToPull,
+        uint256 minScyOut
+    ) external updateLastTxHoldings returns (uint256 amountScyOut) {
+        require(isValidBaseToken(tokenIn), "SCY: Invalid tokenIn");
 
-        /// ------------------------------------------------------------
-        /// ext-call before internal-state-changes else ERC777 can reenter
-        /// ------------------------------------------------------------
-        IERC20(baseTokenIn).safeTransferFrom(msg.sender, address(this), amountBaseIn);
+        if (amountTokenToPull != 0)
+            IERC20(tokenIn).safeTransferFrom(msg.sender, address(this), amountTokenToPull);
 
-        amountScyOut = _toUnderlyingYieldToken(baseTokenIn, amountBaseIn);
-        require(amountScyOut >= minAmountScyOut, "insufficient out");
+        uint256 amountDeposited = IERC20(tokenIn).balanceOf(address(this)) -
+            lastTxHoldings[tokenIn];
 
-        /// ------------------------------------------------------------
-        /// internal-state-changes
-        /// ------------------------------------------------------------
+        amountScyOut = _deposit(tokenIn, amountDeposited);
+        require(amountScyOut >= minScyOut, "insufficient out");
+
         _mint(receiver, amountScyOut);
-
-        emit Deposit(msg.sender, receiver, baseTokenIn, amountBaseIn, amountScyOut);
+        emit Deposit(msg.sender, receiver, tokenIn, amountDeposited, amountScyOut);
     }
 
     function redeem(
         address receiver,
-        address baseTokenOut,
-        uint256 amountScyIn,
-        uint256 minAmountBaseOut
-    ) external returns (uint256 amountBaseOut) {
-        require(isValidBaseToken(baseTokenOut), "invalid base token");
+        uint256 amountScyToPull,
+        address tokenOut,
+        uint256 minTokenOut
+    ) external updateLastTxHoldings returns (uint256 amountTokenOut) {
+        require(isValidBaseToken(tokenOut), "SCY: invalid tokenOut");
 
-        /// ------------------------------------------------------------
-        /// internal-state-changes
-        /// ------------------------------------------------------------
-        _burn(msg.sender, amountScyIn);
+        if (amountScyToPull != 0) transferFrom(msg.sender, address(this), amountScyToPull);
 
-        /// ------------------------------------------------------------
-        /// ext-call
-        /// ------------------------------------------------------------
-        amountBaseOut = _toBaseToken(baseTokenOut, amountScyIn);
-        require(amountBaseOut >= minAmountBaseOut, "insufficient out");
+        uint256 amountScyToRedeem = balanceOf(address(this));
 
-        IERC20(baseTokenOut).safeTransfer(receiver, amountBaseOut);
+        amountTokenOut = _redeem(tokenOut, amountScyToRedeem);
+        require(amountTokenOut >= minTokenOut, "insufficient out");
 
-        emit Redeem(msg.sender, receiver, baseTokenOut, amountScyIn, amountBaseOut);
+        IERC20(tokenOut).safeTransfer(receiver, amountTokenOut);
+        _burn(address(this), amountScyToRedeem);
+
+        emit Redeem(msg.sender, receiver, tokenOut, amountScyToRedeem, amountTokenOut);
     }
 
-    function _toUnderlyingYieldToken(address token, uint256 amountBase)
+    function _deposit(address tokenIn, uint256 amountDeposited)
         internal
         virtual
         returns (uint256 amountScyOut);
 
-    function _toBaseToken(address token, uint256 amountScy)
+    function _redeem(address tokenOut, uint256 amountScyToRedeem)
         internal
         virtual
         returns (uint256 amountTokenOut);
@@ -136,6 +126,8 @@ abstract contract SCYBase is ERC20, ISuperComposableYield {
     }
 
     function getBaseTokens() external view virtual override returns (address[] memory res);
+
+    function getHoldings() public view virtual override returns (address[] memory res);
 
     function isValidBaseToken(address token) public view virtual override returns (bool);
 

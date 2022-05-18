@@ -7,12 +7,6 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "../../libraries/math/Math.sol";
 
-/**
-# CONDITIONS TO USE THIS PRESET:
-- the token's balance must be static (i.e not increase on its own). Some examples of tokens don't
-satisfy this restriction is AaveV2's aToken
-
-*/
 abstract contract SCYBaseWithRewards is SCYBase, RewardManager, ReentrancyGuard {
     using SafeERC20 for IERC20;
     using Math for uint256;
@@ -44,7 +38,7 @@ abstract contract SCYBaseWithRewards is SCYBase, RewardManager, ReentrancyGuard 
         _updateUserReward(user, balanceOf(user), totalSupply());
         rewardAmounts = _doTransferOutRewardsForUser(user, user);
 
-        emit harvests(user, getRewardTokens(), rewardAmounts);
+        emit Harvests(user, getRewardTokens(), rewardAmounts);
     }
 
     function getRewardTokens()

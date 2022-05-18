@@ -51,34 +51,38 @@ contract PendleBenQiErc20SCY is SCYBaseWithRewards {
                     DEPOSIT/REDEEM USING BASE TOKENS
     //////////////////////////////////////////////////////////////*/
 
-    function _toUnderlyingYieldToken(address token, uint256 amountBase)
+    function _deposit(address tokenIn, uint256 amount)
         internal
         virtual
         override
         returns (uint256 amountScyOut)
     {
-        // qiToken -> scy is 1:1
-        if (token == qiToken) {
-            amountScyOut = amountBase;
-        } else {
-            uint256 preBalance = IQiErc20(qiToken).balanceOf(address(this));
-            uint256 errCode = IQiErc20(qiToken).mint(amountBase);
+        uint256 amountQiToken;
+        if (tokenIn == underlying) {
+            // convert it into qiToken first
+            uint256 preBalanceQiToken = IERC20(qiToken).balanceOf(address(this));
+
+            uint256 errCode = IQiErc20(qiToken).mint(amount);
             require(errCode == 0, "mint failed");
-            amountScyOut = IQiErc20(qiToken).balanceOf(address(this)) - preBalance;
+
+            amountQiToken = IERC20(qiToken).balanceOf(address(this)) - preBalanceQiToken;
         }
+
+        amountScyOut = amountQiToken;
     }
 
-    function _toBaseToken(address token, uint256 amountScy)
+    function _redeem(address tokenOut, uint256 amountScyToRedeem)
         internal
         virtual
         override
         returns (uint256 amountBaseOut)
     {
-        if (token == qiToken) {
-            amountBaseOut = amountScy;
+        if (tokenOut == qiToken) {
+            amountBaseOut = amountScyToRedeem;
         } else {
-            uint256 errCode = IQiErc20(qiToken).redeem(amountScy);
+            uint256 errCode = IQiErc20(qiToken).redeem(amountScyToRedeem);
             require(errCode == 0, "redeem failed");
+
             amountBaseOut = IERC20(underlying).balanceOf(address(this));
         }
     }
@@ -110,6 +114,11 @@ contract PendleBenQiErc20SCY is SCYBaseWithRewards {
         res = new address[](2);
         res[0] = qiToken;
         res[1] = underlying;
+    }
+
+    function getHoldings() public view virtual override returns (address[] memory res) {
+        res = new address[](1);
+        res[0] = qiToken;
     }
 
     function isValidBaseToken(address token) public view virtual override returns (bool res) {

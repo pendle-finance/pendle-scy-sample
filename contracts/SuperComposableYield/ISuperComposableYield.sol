@@ -25,19 +25,38 @@ pragma solidity 0.8.9;
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
 interface ISuperComposableYield is IERC20Metadata {
+    event UpdateExchangeRate(uint256 exchangeRate);
+    event Deposit(
+        address indexed caller,
+        address indexed receiver,
+        address indexed tokenIn,
+        uint256 amountDeposited,
+        uint256 amountScyOut
+    );
+
+    event Redeem(
+        address indexed caller,
+        address indexed receiver,
+        address indexed tokenOut,
+        uint256 amountScyToRedeem,
+        uint256 amountTokenOut
+    );
+
+    event Harvests(address indexed user, address[] rewardTokens, uint256[] rewardAmounts);
+
     function deposit(
         address receiver,
-        address baseTokenIn,
-        uint256 amountBaseIn,
-        uint256 minAmountScyOut
+        address tokenIn,
+        uint256 amountTokenToPull,
+        uint256 minScyOut
     ) external returns (uint256 amountScyOut);
 
     function redeem(
         address receiver,
-        address baseTokenOut,
-        uint256 amountScyIn,
-        uint256 minAmountBaseOut
-    ) external returns (uint256 amountBaseOut);
+        uint256 amountScyToPull,
+        address tokenOut,
+        uint256 minTokenOut
+    ) external returns (uint256 amountTokenOut);
 
     function harvest(address user) external returns (uint256[] memory rewardAmounts);
 
@@ -53,6 +72,8 @@ interface ISuperComposableYield is IERC20Metadata {
     function exchangeRateStored() external view returns (uint256);
 
     function getBaseTokens() external view returns (address[] memory);
+
+    function getHoldings() external view returns (address[] memory res);
 
     function isValidBaseToken(address token) external view returns (bool);
 
