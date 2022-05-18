@@ -53,7 +53,6 @@ contract PendleBenQiErc20SCY is SCYBaseWithRewards {
 
     function _deposit(address tokenIn, uint256 amount)
         internal
-        virtual
         override
         returns (uint256 amountScyOut)
     {
@@ -73,7 +72,6 @@ contract PendleBenQiErc20SCY is SCYBaseWithRewards {
 
     function _redeem(address tokenOut, uint256 amountScyToRedeem)
         internal
-        virtual
         override
         returns (uint256 amountBaseOut)
     {
@@ -91,7 +89,7 @@ contract PendleBenQiErc20SCY is SCYBaseWithRewards {
                                SCY-INDEX
     //////////////////////////////////////////////////////////////*/
 
-    function exchangeRateCurrent() public virtual override returns (uint256) {
+    function exchangeRateCurrent() public override returns (uint256) {
         uint256 res = IQiToken(qiToken).exchangeRateCurrent();
 
         exchangeRateStored = res;
@@ -110,22 +108,26 @@ contract PendleBenQiErc20SCY is SCYBaseWithRewards {
                 MISC FUNCTIONS FOR METADATA
     //////////////////////////////////////////////////////////////*/
 
-    function getBaseTokens() public view virtual override returns (address[] memory res) {
+    function getBaseTokens() public view override returns (address[] memory res) {
         res = new address[](2);
         res[0] = qiToken;
         res[1] = underlying;
     }
 
-    function getHoldings() public view virtual override returns (address[] memory res) {
+    function getReserveTokens() public view override returns (address[] memory res) {
         res = new address[](1);
         res[0] = qiToken;
     }
 
-    function isValidBaseToken(address token) public view virtual override returns (bool res) {
+    function isValidBaseToken(address token) public view override returns (bool res) {
         res = (token == underlying || token == qiToken);
     }
 
-    function underlyingYieldToken() external view virtual override returns (address) {
+    function _isValidReserveToken(address token) internal view override returns (bool res) {
+        res = (token == qiToken);
+    }
+
+    function underlyingYieldToken() external view override returns (address) {
         return qiToken;
     }
 
