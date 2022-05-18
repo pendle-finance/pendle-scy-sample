@@ -134,6 +134,4 @@ abstract contract SCYBase is ISuperComposableYield, ERC20, ReentrancyGuard {
     function getReserveTokens() public view virtual override returns (address[] memory res);
 
     function isValidBaseToken(address token) public view virtual override returns (bool);
-
-    function underlyingYieldToken() external view virtual override returns (address);
 }

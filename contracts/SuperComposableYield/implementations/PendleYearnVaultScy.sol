@@ -98,10 +98,6 @@ contract PendleYearnVaultScy is SCYBase {
         return (token == yvToken);
     }
 
-    function underlyingYieldToken() external view virtual override returns (address) {
-        return yvToken;
-    }
-
     /*///////////////////////////////////////////////////////////////
                                REWARDS-RELATED
     //////////////////////////////////////////////////////////////*/
