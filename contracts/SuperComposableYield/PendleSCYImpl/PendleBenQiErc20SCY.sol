@@ -93,7 +93,7 @@ contract PendleBenQiErc20SCY is SCYBaseWithRewards {
         uint256 res = IQiToken(qiToken).exchangeRateCurrent();
 
         exchangeRateStored = res;
-        emit UpdateExchangeRate(res);
+        emit NewExchangeRate(res);
 
         return exchangeRateStored;
     }
