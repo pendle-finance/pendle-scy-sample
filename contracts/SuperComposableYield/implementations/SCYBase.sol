@@ -12,7 +12,7 @@ abstract contract SCYBase is ERC20, ISuperComposableYield {
     using SafeERC20 for IERC20;
     using Math for uint256;
 
-    uint8 private immutable _scyDecimals;
+    uint8 private immutable _sharesDecimals;
     uint8 public immutable assetDecimals;
     bytes32 public immutable assetId;
 
@@ -29,11 +29,11 @@ abstract contract SCYBase is ERC20, ISuperComposableYield {
     constructor(
         string memory _name,
         string memory _symbol,
-        uint8 __scyDecimals,
+        uint8 __sharesDecimals,
         uint8 __assetDecimals,
         bytes32 __assetId
     ) ERC20(_name, _symbol) {
-        _scyDecimals = __scyDecimals;
+        _sharesDecimals = __sharesDecimals;
         assetDecimals = __assetDecimals;
         assetId = __assetId;
     }
@@ -46,8 +46,8 @@ abstract contract SCYBase is ERC20, ISuperComposableYield {
         address receiver,
         address tokenIn,
         uint256 amountTokenToPull,
-        uint256 minScyOut
-    ) external updateReserve returns (uint256 amountScyOut) {
+        uint256 minSharesOut
+    ) external updateReserve returns (uint256 amountSharesOut) {
         require(isValidBaseToken(tokenIn), "SCY: Invalid tokenIn");
 
         if (amountTokenToPull != 0)
@@ -55,40 +55,40 @@ abstract contract SCYBase is ERC20, ISuperComposableYield {
 
         uint256 amountDeposited = getFloatingAmount(tokenIn);
 
-        amountScyOut = _deposit(tokenIn, amountDeposited);
-        require(amountScyOut >= minScyOut, "insufficient out");
+        amountSharesOut = _deposit(tokenIn, amountDeposited);
+        require(amountSharesOut >= minSharesOut, "insufficient out");
 
-        _mint(receiver, amountScyOut);
-        emit Deposit(msg.sender, receiver, tokenIn, amountDeposited, amountScyOut);
+        _mint(receiver, amountSharesOut);
+        emit Deposit(msg.sender, receiver, tokenIn, amountDeposited, amountSharesOut);
     }
 
     function redeem(
         address receiver,
-        uint256 amountScyToPull,
+        uint256 amountSharesToPull,
         address tokenOut,
         uint256 minTokenOut
     ) external updateReserve returns (uint256 amountTokenOut) {
         require(isValidBaseToken(tokenOut), "SCY: invalid tokenOut");
 
-        if (amountScyToPull != 0) transferFrom(msg.sender, address(this), amountScyToPull);
+        if (amountSharesToPull != 0) transferFrom(msg.sender, address(this), amountSharesToPull);
 
-        uint256 amountScyToRedeem = balanceOf(address(this));
+        uint256 amountSharesToRedeem = balanceOf(address(this));
 
-        amountTokenOut = _redeem(tokenOut, amountScyToRedeem);
+        amountTokenOut = _redeem(tokenOut, amountSharesToRedeem);
         require(amountTokenOut >= minTokenOut, "insufficient out");
 
         IERC20(tokenOut).safeTransfer(receiver, amountTokenOut);
-        _burn(address(this), amountScyToRedeem);
+        _burn(address(this), amountSharesToRedeem);
 
-        emit Redeem(msg.sender, receiver, tokenOut, amountScyToRedeem, amountTokenOut);
+        emit Redeem(msg.sender, receiver, tokenOut, amountSharesToRedeem, amountTokenOut);
     }
 
     function _deposit(address tokenIn, uint256 amountDeposited)
         internal
         virtual
-        returns (uint256 amountScyOut);
+        returns (uint256 amountSharesOut);
 
-    function _redeem(address tokenOut, uint256 amountScyToRedeem)
+    function _redeem(address tokenOut, uint256 amountSharesToRedeem)
         internal
         virtual
         returns (uint256 amountTokenOut);
@@ -102,7 +102,7 @@ abstract contract SCYBase is ERC20, ISuperComposableYield {
     function _isValidReserveToken(address token) internal view virtual returns (bool);
 
     /*///////////////////////////////////////////////////////////////
-                               SCY-INDEX
+                               EXCHANGE-RATE
     //////////////////////////////////////////////////////////////*/
 
     function exchangeRateCurrent() external virtual override returns (uint256 res);
@@ -126,7 +126,7 @@ abstract contract SCYBase is ERC20, ISuperComposableYield {
     //////////////////////////////////////////////////////////////*/
 
     function decimals() public view virtual override(ERC20, IERC20Metadata) returns (uint8) {
-        return _scyDecimals;
+        return _sharesDecimals;
     }
 
     function getBaseTokens() external view virtual override returns (address[] memory res);

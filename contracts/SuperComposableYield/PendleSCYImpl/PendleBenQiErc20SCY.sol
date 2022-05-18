@@ -20,7 +20,7 @@ contract PendleBenQiErc20SCY is SCYBaseWithRewards {
     constructor(
         string memory _name,
         string memory _symbol,
-        uint8 __scydecimals,
+        uint8 __sharesdecimals,
         uint8 __assetDecimals,
         bytes32 __assetId,
         address _underlying,
@@ -28,7 +28,7 @@ contract PendleBenQiErc20SCY is SCYBaseWithRewards {
         address _comptroller,
         address _QI,
         address _WAVAX
-    ) SCYBaseWithRewards(_name, _symbol, __scydecimals, __assetDecimals, __assetId) {
+    ) SCYBaseWithRewards(_name, _symbol, __sharesdecimals, __assetDecimals, __assetId) {
         require(
             _qiToken != address(0) &&
                 _QI != address(0) &&
@@ -54,7 +54,7 @@ contract PendleBenQiErc20SCY is SCYBaseWithRewards {
     function _deposit(address tokenIn, uint256 amount)
         internal
         override
-        returns (uint256 amountScyOut)
+        returns (uint256 amountSharesOut)
     {
         uint256 amountQiToken;
         if (tokenIn == underlying) {
@@ -67,18 +67,18 @@ contract PendleBenQiErc20SCY is SCYBaseWithRewards {
             amountQiToken = IERC20(qiToken).balanceOf(address(this)) - preBalanceQiToken;
         }
 
-        amountScyOut = amountQiToken;
+        amountSharesOut = amountQiToken;
     }
 
-    function _redeem(address tokenOut, uint256 amountScyToRedeem)
+    function _redeem(address tokenOut, uint256 amountSharesToRedeem)
         internal
         override
         returns (uint256 amountBaseOut)
     {
         if (tokenOut == qiToken) {
-            amountBaseOut = amountScyToRedeem;
+            amountBaseOut = amountSharesToRedeem;
         } else {
-            uint256 errCode = IQiErc20(qiToken).redeem(amountScyToRedeem);
+            uint256 errCode = IQiErc20(qiToken).redeem(amountSharesToRedeem);
             require(errCode == 0, "redeem failed");
 
             amountBaseOut = IERC20(underlying).balanceOf(address(this));
@@ -86,7 +86,7 @@ contract PendleBenQiErc20SCY is SCYBaseWithRewards {
     }
 
     /*///////////////////////////////////////////////////////////////
-                               SCY-INDEX
+                               EXCHANGE-RATE
     //////////////////////////////////////////////////////////////*/
 
     function exchangeRateCurrent() public override returns (uint256) {
