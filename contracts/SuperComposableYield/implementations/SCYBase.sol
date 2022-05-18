@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "../../libraries/math/Math.sol";
 import "./SCYUtils.sol";
 
-abstract contract SCYBase is ERC20, ISuperComposableYield {
+abstract contract SCYBase is ISuperComposableYield, ERC20, ReentrancyGuard {
     using SafeERC20 for IERC20;
     using Math for uint256;
 
@@ -47,7 +47,7 @@ abstract contract SCYBase is ERC20, ISuperComposableYield {
         address tokenIn,
         uint256 amountTokenToPull,
         uint256 minSharesOut
-    ) external updateReserve returns (uint256 amountSharesOut) {
+    ) external nonReentrant updateReserve returns (uint256 amountSharesOut) {
         require(isValidBaseToken(tokenIn), "SCY: Invalid tokenIn");
 
         if (amountTokenToPull != 0)
@@ -67,7 +67,7 @@ abstract contract SCYBase is ERC20, ISuperComposableYield {
         uint256 amountSharesToPull,
         address tokenOut,
         uint256 minTokenOut
-    ) external updateReserve returns (uint256 amountTokenOut) {
+    ) external nonReentrant updateReserve returns (uint256 amountTokenOut) {
         require(isValidBaseToken(tokenOut), "SCY: invalid tokenOut");
 
         if (amountSharesToPull != 0) transferFrom(msg.sender, address(this), amountSharesToPull);
