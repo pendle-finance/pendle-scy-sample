@@ -20,10 +20,7 @@ abstract contract SCYBase is ISuperComposableYield, ERC20, ReentrancyGuard {
 
     modifier updateReserve() {
         _;
-        address[] memory tokens = getReserveTokens();
-        for (uint256 i = 0; i < tokens.length; i++) {
-            reserve[tokens[i]] = IERC20(tokens[i]).balanceOf(address(this));
-        }
+        _updateReserve();
     }
 
     constructor(
@@ -94,9 +91,15 @@ abstract contract SCYBase is ISuperComposableYield, ERC20, ReentrancyGuard {
         returns (uint256 amountTokenOut);
 
     function getFloatingAmount(address token) public view virtual override returns (uint256) {
-        if (_isValidReserveToken(token))
-            return IERC20(token).balanceOf(address(this)) - reserve[token];
-        else return IERC20(token).balanceOf(address(this));
+        if (!_isValidReserveToken(token)) return IERC20(token).balanceOf(address(this));
+        return IERC20(token).balanceOf(address(this)) - reserve[token];
+    }
+
+    function _updateReserve() internal virtual {
+        address[] memory tokens = getReserveTokens();
+        for (uint256 i = 0; i < tokens.length; i++) {
+            reserve[tokens[i]] = IERC20(tokens[i]).balanceOf(address(this));
+        }
     }
 
     /*///////////////////////////////////////////////////////////////
