@@ -119,8 +119,6 @@ contract PendleTraderJoeSCY is SCYBase {
         res = new address[](0);
     }
 
-    //solhint-disable-next-line no-empty-blocks
-    function _redeemExternalReward() internal virtual {}
 
     /*///////////////////////////////////////////////////////////////
                     ZAPPING IN/OUT USING ZAPPER'S ALGORITHMS

@@ -117,7 +117,4 @@ contract PendleBtrflyScy is SCYBase {
     function getRewardTokens() public view virtual override returns (address[] memory res) {
         res = new address[](0);
     }
-
-    //solhint-disable-next-line no-empty-blocks
-    function _redeemExternalReward() internal virtual {}
 }

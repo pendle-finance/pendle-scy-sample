@@ -5,7 +5,7 @@ import "../../SuperComposableYield/implementations/SCYBase.sol";
 import "../../interfaces/IYearnVault.sol";
 import "../../interfaces/IQiErc20.sol";
 
-contract PendleYearnVaultScy is SCYBase {
+contract PendleYearnVaultSCY is SCYBase {
     using SafeERC20 for IERC20;
 
     address public immutable underlying;
@@ -108,7 +108,4 @@ contract PendleYearnVaultScy is SCYBase {
     function getRewardTokens() public view virtual override returns (address[] memory res) {
         res = new address[](0);
     }
-
-    //solhint-disable-next-line no-empty-blocks
-    function _redeemExternalReward() internal virtual {}
 }
