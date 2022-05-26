@@ -116,7 +116,7 @@ abstract contract SCYBase is ISuperComposableYield, ERC20, ReentrancyGuard {
                                REWARDS-RELATED
     //////////////////////////////////////////////////////////////*/
 
-    function harvest(address user)
+    function claimRewards(address user)
         public
         virtual
         override

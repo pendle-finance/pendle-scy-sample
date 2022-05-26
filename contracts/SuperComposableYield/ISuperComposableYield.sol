@@ -42,7 +42,7 @@ interface ISuperComposableYield is IERC20Metadata {
         uint256 amountTokenOut
     );
 
-    event Harvests(address indexed user, address[] rewardTokens, uint256[] rewardAmounts);
+    event claimRewardss(address indexed user, address[] rewardTokens, uint256[] rewardAmounts);
 
     function deposit(
         address receiver,
@@ -58,7 +58,7 @@ interface ISuperComposableYield is IERC20Metadata {
         uint256 minTokenOut
     ) external returns (uint256 amountTokenOut);
 
-    function harvest(address user) external returns (uint256[] memory rewardAmounts);
+    function claimRewards(address user) external returns (uint256[] memory rewardAmounts);
 
     /**
     * @notice exchangeRateCurrent * scyBalance / 1e18 must return the asset balance of the account

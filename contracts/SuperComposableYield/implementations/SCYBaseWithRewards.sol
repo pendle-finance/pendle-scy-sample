@@ -29,7 +29,7 @@ abstract contract SCYBaseWithRewards is SCYBase, RewardManager {
                                REWARDS-RELATED
     //////////////////////////////////////////////////////////////*/
 
-    function harvest(address user)
+    function claimRewards(address user)
         public
         virtual
         override
@@ -39,7 +39,7 @@ abstract contract SCYBaseWithRewards is SCYBase, RewardManager {
         _updateAndDistributeReward(user);
         rewardAmounts = _doTransferOutRewards(user, user);
 
-        emit Harvests(user, getRewardTokens(), rewardAmounts);
+        emit claimRewardss(user, getRewardTokens(), rewardAmounts);
     }
 
     function getRewardTokens()
