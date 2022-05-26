@@ -55,7 +55,7 @@ abstract contract SCYBase is ISuperComposableYield, ERC20, ReentrancyGuard {
         if (amountTokenToPull != 0)
             IERC20(tokenIn).safeTransferFrom(msg.sender, address(this), amountTokenToPull);
 
-        uint256 amountDeposited = getFloatingAmount(tokenIn);
+        uint256 amountDeposited = _getFloatingAmount(tokenIn);
 
         amountSharesOut = _deposit(tokenIn, amountDeposited);
         require(amountSharesOut >= minSharesOut, "insufficient out");
@@ -95,13 +95,13 @@ abstract contract SCYBase is ISuperComposableYield, ERC20, ReentrancyGuard {
         virtual
         returns (uint256 amountTokenOut);
 
-    function getFloatingAmount(address token) public view virtual returns (uint256) {
-        if (token != yieldToken) return IERC20(token).balanceOf(address(this));
-        return IERC20(token).balanceOf(address(this)) - yieldTokenReserve;
-    }
-
     function _updateReserve() internal virtual {
         yieldTokenReserve = IERC20(yieldToken).balanceOf(address(this));
+    }
+
+    function _getFloatingAmount(address token) internal view virtual returns (uint256) {
+        if (token != yieldToken) return IERC20(token).balanceOf(address(this));
+        return IERC20(token).balanceOf(address(this)) - yieldTokenReserve;
     }
 
     /*///////////////////////////////////////////////////////////////
@@ -117,7 +117,7 @@ abstract contract SCYBase is ISuperComposableYield, ERC20, ReentrancyGuard {
     //////////////////////////////////////////////////////////////*/
 
     function claimRewards(address user)
-        public
+        external
         virtual
         override
         returns (uint256[] memory rewardAmounts);

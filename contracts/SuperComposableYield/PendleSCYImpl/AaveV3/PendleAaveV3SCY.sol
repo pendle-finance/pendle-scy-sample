@@ -74,16 +74,16 @@ contract PendleAaveV3SCY is SCYBaseWithRewards {
         }
     }
 
-    function getFloatingAmount(address token) public view virtual override returns (uint256) {
+    function _updateReserve() internal virtual override {
+        yieldTokenReserve = IAToken(aToken).scaledBalanceOf(address(this));
+    }
+
+    function _getFloatingAmount(address token) internal view virtual override returns (uint256) {
         if (token != aToken) return IERC20(token).balanceOf(address(this));
         // the only reserve token is aToken
         uint256 scaledATokenAmount = IAToken(aToken).scaledBalanceOf(address(this)) -
             yieldTokenReserve;
         return _scaledBalanceToAToken(scaledATokenAmount);
-    }
-
-    function _updateReserve() internal virtual override {
-        yieldTokenReserve = IAToken(aToken).scaledBalanceOf(address(this));
     }
 
     /*///////////////////////////////////////////////////////////////

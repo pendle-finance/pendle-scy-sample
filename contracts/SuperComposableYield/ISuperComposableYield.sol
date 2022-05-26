@@ -42,23 +42,21 @@ interface ISuperComposableYield is IERC20Metadata {
         uint256 amountTokenOut
     );
 
-    event claimRewardss(address indexed user, address[] rewardTokens, uint256[] rewardAmounts);
+    event ClaimRewardss(address indexed user, address[] rewardTokens, uint256[] rewardAmounts);
 
     function deposit(
         address receiver,
         address tokenIn,
         uint256 amountTokenToPull,
-        uint256 minScyOut
-    ) external returns (uint256 amountScyOut);
+        uint256 minSharesOut
+    ) external returns (uint256 amountSharesOut);
 
     function redeem(
         address receiver,
-        uint256 amountScyToPull,
+        uint256 amountSharesToPull,
         address tokenOut,
         uint256 minTokenOut
     ) external returns (uint256 amountTokenOut);
-
-    function claimRewards(address user) external returns (uint256[] memory rewardAmounts);
 
     /**
     * @notice exchangeRateCurrent * scyBalance / 1e18 must return the asset balance of the account
@@ -67,17 +65,19 @@ interface ISuperComposableYield is IERC20Metadata {
     * @dev SCYUtils's assetToScy & scyToAsset should be used instead of raw multiplication
     & division
     */
-    function exchangeRateCurrent() external returns (uint256);
+    function exchangeRateCurrent() external returns (uint256 res);
 
-    function exchangeRateStored() external view returns (uint256);
+    function exchangeRateStored() external view returns (uint256 res);
+
+    function claimRewards(address user) external returns (uint256[] memory rewardAmounts);
+
+    function getRewardTokens() external view returns (address[] memory);
 
     function yieldToken() external view returns (address);
 
-    function getBaseTokens() external view returns (address[] memory);
+    function getBaseTokens() external view returns (address[] memory res);
 
     function isValidBaseToken(address token) external view returns (bool);
-
-    function getRewardTokens() external view returns (address[] memory);
 
     function assetDecimals() external view returns (uint8);
 

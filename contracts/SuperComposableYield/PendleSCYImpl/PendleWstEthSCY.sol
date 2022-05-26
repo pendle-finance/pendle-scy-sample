@@ -3,7 +3,7 @@ pragma solidity 0.8.9;
 import "../../SuperComposableYield/implementations/SCYBase.sol";
 import "../../interfaces/IWstETH.sol";
 
-contract PendleStEthSCY is SCYBase {
+contract PendleWstEthSCY is SCYBase {
     using SafeERC20 for IERC20;
 
     address public immutable stETH;

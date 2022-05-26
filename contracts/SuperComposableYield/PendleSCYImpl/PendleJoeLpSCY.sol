@@ -6,7 +6,7 @@ import "../../interfaces/IJoeRouter02.sol";
 import "../../SuperComposableYield/implementations/SCYBase.sol";
 import "./libraries/LogExpMath.sol";
 
-contract PendleTraderJoeSCY is SCYBase {
+contract PendleJoeLpSCY is SCYBase {
     using SafeERC20 for IERC20;
     using Math for uint256;
 
