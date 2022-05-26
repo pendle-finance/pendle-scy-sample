@@ -71,11 +71,9 @@ interface ISuperComposableYield is IERC20Metadata {
 
     function exchangeRateStored() external view returns (uint256);
 
-    function getFloatingAmount(address token) external view returns (uint256);
+    function yieldToken() external view returns (address);
 
     function getBaseTokens() external view returns (address[] memory);
-
-    function getReserveTokens() external view returns (address[] memory);
 
     function isValidBaseToken(address token) external view returns (bool);
 

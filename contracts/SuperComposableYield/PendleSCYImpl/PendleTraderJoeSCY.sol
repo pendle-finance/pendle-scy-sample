@@ -25,7 +25,7 @@ contract PendleTraderJoeSCY is SCYBase {
         bytes32 __assetId,
         address _joeRouter,
         address _joePair
-    ) SCYBase(_name, _symbol, __sharesdecimals, __assetDecimals, __assetId) {
+    ) SCYBase(_name, _symbol, _joePair, __sharesdecimals, __assetDecimals, __assetId) {
         require(_joeRouter != address(0), "zero address");
         joeRouter = _joeRouter;
         joePair = _joePair;
@@ -95,17 +95,8 @@ contract PendleTraderJoeSCY is SCYBase {
         res[2] = joePair;
     }
 
-    function getReserveTokens() public view override returns (address[] memory res) {
-        res = new address[](1);
-        res[0] = joePair;
-    }
-
     function isValidBaseToken(address token) public view override returns (bool res) {
         res = (token == token0 || token == token1 || token == joePair);
-    }
-
-    function _isValidReserveToken(address token) internal view override returns (bool res) {
-        res = (token == joePair);
     }
 
     /*///////////////////////////////////////////////////////////////
@@ -118,7 +109,6 @@ contract PendleTraderJoeSCY is SCYBase {
     function getRewardTokens() public view virtual override returns (address[] memory res) {
         res = new address[](0);
     }
-
 
     /*///////////////////////////////////////////////////////////////
                     ZAPPING IN/OUT USING ZAPPER'S ALGORITHMS

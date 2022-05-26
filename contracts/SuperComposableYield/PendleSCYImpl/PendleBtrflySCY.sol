@@ -23,7 +23,7 @@ contract PendleBtrflyScy is SCYBase {
         address _BTRFLY,
         address _xBTRFLY,
         address _wxBTRFLY
-    ) SCYBase(_name, _symbol, __scydecimals, __assetDecimals, __assetId) {
+    ) SCYBase(_name, _symbol, _wxBTRFLY, __scydecimals, __assetDecimals, __assetId) {
         require(_wxBTRFLY != address(0), "zero address");
         BTRFLY = _BTRFLY;
         xBTRFLY = _xBTRFLY;
@@ -94,17 +94,8 @@ contract PendleBtrflyScy is SCYBase {
         res[2] = wxBTRFLY;
     }
 
-    function getReserveTokens() public view virtual override returns (address[] memory res) {
-        res = new address[](1);
-        res[0] = wxBTRFLY;
-    }
-
     function isValidBaseToken(address token) public view virtual override returns (bool) {
         return token == BTRFLY || token == xBTRFLY || token == wxBTRFLY;
-    }
-
-    function _isValidReserveToken(address token) internal view override returns (bool res) {
-        res = (token == wxBTRFLY);
     }
 
     /*///////////////////////////////////////////////////////////////

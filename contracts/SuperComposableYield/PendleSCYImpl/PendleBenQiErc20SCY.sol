@@ -28,7 +28,7 @@ contract PendleBenQiErc20SCY is SCYBaseWithRewards {
         address _comptroller,
         address _QI,
         address _WAVAX
-    ) SCYBaseWithRewards(_name, _symbol, __sharesdecimals, __assetDecimals, __assetId) {
+    ) SCYBaseWithRewards(_name, _symbol, _qiToken, __sharesdecimals, __assetDecimals, __assetId) {
         require(
             _qiToken != address(0) &&
                 _QI != address(0) &&
@@ -114,17 +114,8 @@ contract PendleBenQiErc20SCY is SCYBaseWithRewards {
         res[1] = underlying;
     }
 
-    function getReserveTokens() public view override returns (address[] memory res) {
-        res = new address[](1);
-        res[0] = qiToken;
-    }
-
     function isValidBaseToken(address token) public view override returns (bool res) {
         res = (token == underlying || token == qiToken);
-    }
-
-    function _isValidReserveToken(address token) internal view override returns (bool res) {
-        res = (token == qiToken);
     }
 
     /*///////////////////////////////////////////////////////////////

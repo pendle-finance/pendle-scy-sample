@@ -31,7 +31,7 @@ contract PendleAaveV3SCY is SCYBaseWithRewards {
         address _underlying,
         address _aToken,
         address _rewardsController
-    ) SCYBaseWithRewards(_name, _symbol, __scydecimals, __assetDecimals, __assetId) {
+    ) SCYBaseWithRewards(_name, _symbol, _aToken, __scydecimals, __assetDecimals, __assetId) {
         aToken = _aToken;
         pool = _aavePool;
         underlying = _underlying;
@@ -75,15 +75,15 @@ contract PendleAaveV3SCY is SCYBaseWithRewards {
     }
 
     function getFloatingAmount(address token) public view virtual override returns (uint256) {
-        if (!_isValidReserveToken(token)) return IERC20(token).balanceOf(address(this));
+        if (token != aToken) return IERC20(token).balanceOf(address(this));
         // the only reserve token is aToken
         uint256 scaledATokenAmount = IAToken(aToken).scaledBalanceOf(address(this)) -
-            reserve[SCALED_ATOKEN_ADDR];
+            yieldTokenReserve;
         return _scaledBalanceToAToken(scaledATokenAmount);
     }
 
     function _updateReserve() internal virtual override {
-        reserve[SCALED_ATOKEN_ADDR] = IAToken(aToken).scaledBalanceOf(address(this));
+        yieldTokenReserve = IAToken(aToken).scaledBalanceOf(address(this));
     }
 
     /*///////////////////////////////////////////////////////////////
@@ -115,15 +115,6 @@ contract PendleAaveV3SCY is SCYBaseWithRewards {
 
     function isValidBaseToken(address token) public view virtual override returns (bool res) {
         res = (token == underlying || token == aToken);
-    }
-
-    function getReserveTokens() public view virtual override returns (address[] memory res) {
-        res = new address[](1);
-        res[0] = aToken;
-    }
-
-    function _isValidReserveToken(address token) internal view override returns (bool res) {
-        res = (token == aToken);
     }
 
     /*///////////////////////////////////////////////////////////////

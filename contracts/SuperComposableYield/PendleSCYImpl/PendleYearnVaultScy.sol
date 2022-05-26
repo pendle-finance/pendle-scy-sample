@@ -21,7 +21,7 @@ contract PendleYearnVaultSCY is SCYBase {
         bytes32 __assetId,
         address _underlying,
         address _yvToken
-    ) SCYBase(_name, _symbol, __scydecimals, __assetDecimals, __assetId) {
+    ) SCYBase(_name, _symbol, _yvToken, __scydecimals, __assetDecimals, __assetId) {
         require(_yvToken != address(0), "zero address");
         yvToken = _yvToken;
         underlying = _underlying;
@@ -87,15 +87,6 @@ contract PendleYearnVaultSCY is SCYBase {
 
     function isValidBaseToken(address token) public view virtual override returns (bool) {
         return token == underlying || token == yvToken;
-    }
-
-    function getReserveTokens() public view virtual override returns (address[] memory res) {
-        res = new address[](1);
-        res[0] = yvToken;
-    }
-
-    function _isValidReserveToken(address token) internal view virtual override returns (bool) {
-        return (token == yvToken);
     }
 
     /*///////////////////////////////////////////////////////////////

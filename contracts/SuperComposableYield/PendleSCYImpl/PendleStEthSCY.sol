@@ -19,7 +19,7 @@ contract PendleStEthSCY is SCYBase {
         address _stETH,
         address _wstETH,
         bytes32 __assetId
-    ) SCYBase(_name, _symbol, __scydecimals, __assetDecimals, __assetId) {
+    ) SCYBase(_name, _symbol, _wstETH, __scydecimals, __assetDecimals, __assetId) {
         require(_wstETH != address(0), "zero address");
         stETH = _stETH;
         wstETH = _wstETH;
@@ -81,15 +81,6 @@ contract PendleStEthSCY is SCYBase {
 
     function isValidBaseToken(address token) public view virtual override returns (bool) {
         return token == stETH || token == wstETH;
-    }
-
-    function getReserveTokens() public view virtual override returns (address[] memory res) {
-        res = new address[](1);
-        res[0] = wstETH;
-    }
-
-    function _isValidReserveToken(address token) internal view virtual override returns (bool) {
-        return token == wstETH;
     }
 
     /*///////////////////////////////////////////////////////////////

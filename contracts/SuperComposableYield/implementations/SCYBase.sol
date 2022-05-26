@@ -13,10 +13,13 @@ abstract contract SCYBase is ISuperComposableYield, ERC20, ReentrancyGuard {
     using Math for uint256;
 
     uint8 private immutable _sharesDecimals;
+
     uint8 public immutable assetDecimals;
     bytes32 public immutable assetId;
 
-    mapping(address => uint256) public reserve;
+    address public immutable yieldToken;
+
+    uint256 public yieldTokenReserve;
 
     modifier updateReserve() {
         _;
@@ -26,10 +29,12 @@ abstract contract SCYBase is ISuperComposableYield, ERC20, ReentrancyGuard {
     constructor(
         string memory _name,
         string memory _symbol,
+        address _yieldToken,
         uint8 __sharesDecimals,
         uint8 __assetDecimals,
         bytes32 __assetId
     ) ERC20(_name, _symbol) {
+        yieldToken = _yieldToken;
         _sharesDecimals = __sharesDecimals;
         assetDecimals = __assetDecimals;
         assetId = __assetId;
@@ -90,16 +95,13 @@ abstract contract SCYBase is ISuperComposableYield, ERC20, ReentrancyGuard {
         virtual
         returns (uint256 amountTokenOut);
 
-    function getFloatingAmount(address token) public view virtual override returns (uint256) {
-        if (!_isValidReserveToken(token)) return IERC20(token).balanceOf(address(this));
-        return IERC20(token).balanceOf(address(this)) - reserve[token];
+    function getFloatingAmount(address token) public view virtual returns (uint256) {
+        if (token != yieldToken) return IERC20(token).balanceOf(address(this));
+        return IERC20(token).balanceOf(address(this)) - yieldTokenReserve;
     }
 
     function _updateReserve() internal virtual {
-        address[] memory tokens = getReserveTokens();
-        for (uint256 i = 0; i < tokens.length; i++) {
-            reserve[tokens[i]] = IERC20(tokens[i]).balanceOf(address(this));
-        }
+        yieldTokenReserve = IERC20(yieldToken).balanceOf(address(this));
     }
 
     /*///////////////////////////////////////////////////////////////
@@ -131,10 +133,6 @@ abstract contract SCYBase is ISuperComposableYield, ERC20, ReentrancyGuard {
     }
 
     function getBaseTokens() external view virtual override returns (address[] memory res);
-
-    function getReserveTokens() public view virtual override returns (address[] memory res);
-
-    function _isValidReserveToken(address token) internal view virtual returns (bool);
 
     function isValidBaseToken(address token) public view virtual override returns (bool);
 }
