@@ -26,6 +26,14 @@ contract PendleYearnVaultSCY is SCYBase {
                     DEPOSIT/REDEEM USING BASE TOKENS
     //////////////////////////////////////////////////////////////*/
 
+    /**
+     * @dev See {SCYBase-_deposit}
+     *
+     * The underlying yield token is yvToken. If the base token deposited is underlying asset, the function
+     * first mints yvToken using those deposited. Then the corresponding amount of shares is returned.
+     *
+     * The exchange rate of yvToken to shares is 1:1
+     */
     function _deposit(address tokenIn, uint256 amountDeposited)
         internal
         virtual
@@ -42,6 +50,12 @@ contract PendleYearnVaultSCY is SCYBase {
         }
     }
 
+    /**
+     * @dev See {SCYBase-_redeem}
+     *
+     * The shares are redeemed into the same amount of yvTokens. If `tokenOut` is the underlying asset,
+     * the function also withdraws said asset for redemption, using the corresponding amount of yvToken.
+     */
     function _redeem(address tokenOut, uint256 amountSharesToRedeem)
         internal
         virtual
@@ -61,6 +75,10 @@ contract PendleYearnVaultSCY is SCYBase {
                                EXCHANGE-RATE
     //////////////////////////////////////////////////////////////*/
 
+    /**
+     * @notice Calculates and updates the exchange rate of shares to underlying asset token
+     * @dev It is the price per share of the yvToken
+     */
     function exchangeRateCurrent() public override returns (uint256 currentRate) {
         currentRate = IYearnVault(yvToken).pricePerShare();
 
@@ -73,12 +91,18 @@ contract PendleYearnVaultSCY is SCYBase {
                 MISC FUNCTIONS FOR METADATA
     //////////////////////////////////////////////////////////////*/
 
+    /**
+     * @dev See {ISuperComposableYield-getBaseTokens}
+     */
     function getBaseTokens() public view virtual override returns (address[] memory res) {
         res = new address[](2);
         res[0] = underlying;
         res[1] = yvToken;
     }
 
+    /**
+     * @dev See {ISuperComposableYield-isValidBaseToken}
+     */
     function isValidBaseToken(address token) public view virtual override returns (bool) {
         return token == underlying || token == yvToken;
     }

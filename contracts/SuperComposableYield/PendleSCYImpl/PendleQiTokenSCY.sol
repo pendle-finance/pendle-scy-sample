@@ -46,6 +46,14 @@ contract PendleQiTokenSCY is SCYBaseWithRewards {
                     DEPOSIT/REDEEM USING BASE TOKENS
     //////////////////////////////////////////////////////////////*/
 
+    /**
+     * @dev See {SCYBase-_deposit}
+     *
+     * The underlying yield token is qiToken. If the base token deposited is underlying asset, the function
+     * first convert those deposited into qiToken. Then the corresponding amount of shares is returned.
+     *
+     * The exchange rate of qiToken to shares is 1:1
+     */
     function _deposit(address tokenIn, uint256 amount)
         internal
         override
@@ -68,6 +76,12 @@ contract PendleQiTokenSCY is SCYBaseWithRewards {
         }
     }
 
+    /**
+     * @dev See {SCYBase-_redeem}
+     *
+     * The shares are redeemed into the same amount of qiTokens. If `tokenOut` is the underlying asset,
+     * the function also redeems said asset from the corresponding amount of qiToken.
+     */
     function _redeem(address tokenOut, uint256 amountSharesToRedeem)
         internal
         override
@@ -92,6 +106,10 @@ contract PendleQiTokenSCY is SCYBaseWithRewards {
                                EXCHANGE-RATE
     //////////////////////////////////////////////////////////////*/
 
+    /**
+     * @notice Calculates and updates the exchange rate of shares to underlying asset token
+     * @dev It is the exchange rate of qiToken to its underlying asset
+     */
     function exchangeRateCurrent() public override returns (uint256 currentRate) {
         currentRate = IQiToken(qiToken).exchangeRateCurrent();
 
@@ -104,6 +122,9 @@ contract PendleQiTokenSCY is SCYBaseWithRewards {
                                REWARDS-RELATED
     //////////////////////////////////////////////////////////////*/
 
+    /**
+     * @dev See {ISuperComposableYield-getRewardTokens}
+     */
     function _getRewardTokens() internal view override returns (address[] memory res) {
         res = new address[](2);
         res[0] = QI;
@@ -126,12 +147,18 @@ contract PendleQiTokenSCY is SCYBaseWithRewards {
                     MISC FUNCTIONS FOR METADATA
     //////////////////////////////////////////////////////////////*/
 
+    /**
+     * @dev See {ISuperComposableYield-getBaseTokens}
+     */
     function getBaseTokens() public view override returns (address[] memory res) {
         res = new address[](2);
         res[0] = qiToken;
         res[1] = underlying;
     }
 
+    /**
+     * @dev See {ISuperComposableYield-isValidBaseToken}
+     */
     function isValidBaseToken(address token) public view override returns (bool res) {
         res = (token == underlying || token == qiToken);
     }

@@ -25,6 +25,14 @@ contract PendleWstEthSCY is SCYBase {
                     DEPOSIT/REDEEM USING BASE TOKENS
     //////////////////////////////////////////////////////////////*/
 
+    /**
+     * @dev See {SCYBase-_deposit}
+     *
+     * The underlying yield token is wstETH. If the base token deposited is stETH, the function wraps
+     * it into wstETH first. Then the corresponding amount of shares is returned.
+     *
+     * The exchange rate of wstETH to shares is 1:1
+     */
     function _deposit(address tokenIn, uint256 amountDeposited)
         internal
         virtual
@@ -38,6 +46,12 @@ contract PendleWstEthSCY is SCYBase {
         }
     }
 
+    /**
+     * @dev See {SCYBase-_redeem}
+     *
+     * The shares are redeemed into the same amount of wstETH. If `tokenOut` is stETH, the function also
+     * unwraps said amount of wstETH into stETH for redemption.
+     */
     function _redeem(address tokenOut, uint256 amountSharesToRedeem)
         internal
         virtual
@@ -55,6 +69,10 @@ contract PendleWstEthSCY is SCYBase {
                                EXCHANGE-RATE
     //////////////////////////////////////////////////////////////*/
 
+    /**
+     * @notice Calculates and updates the exchange rate of shares to underlying asset token
+     * @dev It is the exchange rate of wstETH to stETH
+     */
     function exchangeRateCurrent() public virtual override returns (uint256 currentRate) {
         currentRate = IWstETH(wstETH).stEthPerToken();
 
@@ -67,12 +85,18 @@ contract PendleWstEthSCY is SCYBase {
                 MISC FUNCTIONS FOR METADATA
     //////////////////////////////////////////////////////////////*/
 
+    /**
+     * @dev See {ISuperComposableYield-getBaseTokens}
+     */
     function getBaseTokens() public view virtual override returns (address[] memory res) {
         res = new address[](2);
         res[0] = stETH;
         res[1] = wstETH;
     }
 
+    /**
+     * @dev See {ISuperComposableYield-isValidBaseToken}
+     */
     function isValidBaseToken(address token) public view virtual override returns (bool) {
         return token == stETH || token == wstETH;
     }

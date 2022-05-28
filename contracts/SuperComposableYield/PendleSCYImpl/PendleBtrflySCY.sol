@@ -31,6 +31,14 @@ contract PendleBtrflyScy is SCYBase {
                     DEPOSIT/REDEEM USING BASE TOKENS
     //////////////////////////////////////////////////////////////*/
 
+    /**
+     * @dev See {SCYBase-_deposit}
+     *
+     * The underlying yield token is wxBTRFLY. If the base token is not said token, the contract
+     * first wraps from `tokenIn` to wxBRTRFLY. Then the corresponding amount of shares is returned.
+     *
+     * The exchange rate of wxBTRFLY to shares is 1:1
+     */
     function _deposit(address tokenIn, uint256 amountDeposited)
         internal
         virtual
@@ -49,6 +57,12 @@ contract PendleBtrflyScy is SCYBase {
         }
     }
 
+    /**
+     * @dev See {SCYBase-_redeem}
+     *
+     * The shares are redeemed into the same amount of wxBTRFLY. If `tokenOut` is not wxBTRFLY
+     * the function unwraps said amount of wxBTRFLY into `tokenOut` for redemption.
+     */
     function _redeem(address tokenOut, uint256 amountSharesToRedeem)
         internal
         virtual
@@ -69,6 +83,10 @@ contract PendleBtrflyScy is SCYBase {
                                EXCHANGE-RATE
     //////////////////////////////////////////////////////////////*/
 
+    /**
+     * @notice Calculates and updates the exchange rate of shares to underlying asset token
+     * @dev It is the conversion rate of wxBTRFLY to BTRFLY
+     */
     function exchangeRateCurrent() public virtual override returns (uint256 currentRate) {
         currentRate = IWXBTRFLY(wxBTRFLY).xBTRFLYValue(Math.ONE);
 
@@ -81,6 +99,9 @@ contract PendleBtrflyScy is SCYBase {
                 MISC FUNCTIONS FOR METADATA
     //////////////////////////////////////////////////////////////*/
 
+    /**
+     * @dev See {ISuperComposableYield-getBaseTokens}
+     */
     function getBaseTokens() public view virtual override returns (address[] memory res) {
         res = new address[](3);
         res[0] = BTRFLY;
@@ -88,6 +109,9 @@ contract PendleBtrflyScy is SCYBase {
         res[2] = wxBTRFLY;
     }
 
+    /**
+     * @dev See {ISuperComposableYield-isValidBaseToken}
+     */
     function isValidBaseToken(address token) public view virtual override returns (bool) {
         return token == BTRFLY || token == xBTRFLY || token == wxBTRFLY;
     }
