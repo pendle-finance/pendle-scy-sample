@@ -29,6 +29,9 @@ abstract contract SCYBaseWithRewards is SCYBase, RewardManager {
                                REWARDS-RELATED
     //////////////////////////////////////////////////////////////*/
 
+    /**
+     * @dev See {ISuperComposableYield-claimRewards} 
+     */
     function claimRewards(address user)
         external
         virtual
@@ -41,6 +44,9 @@ abstract contract SCYBaseWithRewards is SCYBase, RewardManager {
         emit ClaimRewardss(user, getRewardTokens(), rewardAmounts);
     }
 
+    /**
+     * @dev See {ISuperComposableYield-getRewardTokens}
+     */
     function getRewardTokens()
         public
         view
@@ -48,10 +54,18 @@ abstract contract SCYBaseWithRewards is SCYBase, RewardManager {
         override(SCYBase, RewardManager)
         returns (address[] memory);
 
+    /**
+     * @notice returns the total number of reward shares
+     * @dev this is simply the total supply of SCY, as rewards shares are equivalent to SCY shares
+     */
     function _rewardSharesTotal() internal virtual override returns (uint256) {
         return totalSupply();
     }
 
+    /**
+     * @notice returns the reward shares of (`user`)
+     * @dev this is simply the SCY balance of (`user`), as rewards shares are equivalent to SCY shares
+     */
     function _rewardSharesUser(address user) internal virtual override returns (uint256) {
         return balanceOf(user);
     }
