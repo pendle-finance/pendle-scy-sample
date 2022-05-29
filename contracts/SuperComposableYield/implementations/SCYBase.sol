@@ -108,21 +108,35 @@ abstract contract SCYBase is ISuperComposableYield, ERC20, ReentrancyGuard {
                                EXCHANGE-RATE
     //////////////////////////////////////////////////////////////*/
 
-    function exchangeRateCurrent() external virtual override returns (uint256 res);
+    function exchangeRateCurrent() external virtual override returns (uint256);
 
-    function exchangeRateStored() external view virtual override returns (uint256 res);
+    function exchangeRateStored() external view virtual override returns (uint256);
 
     /*///////////////////////////////////////////////////////////////
                                REWARDS-RELATED
     //////////////////////////////////////////////////////////////*/
 
-    function claimRewards(address user)
+    function claimRewards(
+        address /*user*/
+    ) external virtual override returns (uint256[] memory rewardAmounts) {
+        rewardAmounts = new uint256[](0);
+    }
+
+    function getRewardTokens()
         external
+        view
         virtual
         override
-        returns (uint256[] memory rewardAmounts);
+        returns (address[] memory rewardTokens)
+    {
+        rewardTokens = new address[](0);
+    }
 
-    function getRewardTokens() external view virtual override returns (address[] memory);
+    function accruedRewards(
+        address /*user*/
+    ) external view virtual override returns (uint256[] memory rewardAmounts) {
+        rewardAmounts = new uint256[](0);
+    }
 
     /*///////////////////////////////////////////////////////////////
                 MISC METADATA FUNCTIONS

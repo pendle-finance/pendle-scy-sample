@@ -2,8 +2,6 @@
 pragma solidity 0.8.9;
 
 interface IRewardManager {
-    function getRewardTokens() external view returns (address[] memory);
-
     function userRewardAccrued(address token, address user) external view returns (uint256);
 
     function rewardState(address token) external view returns (uint256 index, uint256 lastBalance);

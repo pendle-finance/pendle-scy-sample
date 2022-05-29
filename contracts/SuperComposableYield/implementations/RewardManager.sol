@@ -22,7 +22,7 @@ abstract contract RewardManager is IRewardManager {
     mapping(address => mapping(address => uint256)) public userRewardAccrued;
     mapping(address => mapping(address => uint256)) public userRewardIndex;
 
-    function getRewardTokens() public view virtual override returns (address[] memory);
+    function _getRewardTokens() internal view virtual returns (address[] memory);
 
     function _updateAndDistributeReward(address user) internal virtual {
         _updateRewardIndex();
@@ -37,7 +37,7 @@ abstract contract RewardManager is IRewardManager {
 
         uint256 totalShares = _rewardSharesTotal();
 
-        address[] memory rewardTokens = getRewardTokens();
+        address[] memory rewardTokens = _getRewardTokens();
 
         for (uint256 i = 0; i < rewardTokens.length; ++i) {
             address token = rewardTokens[i];
@@ -55,7 +55,7 @@ abstract contract RewardManager is IRewardManager {
     }
 
     function _distributeUserReward(address user) internal virtual {
-        address[] memory rewardTokens = getRewardTokens();
+        address[] memory rewardTokens = _getRewardTokens();
 
         uint256 userShares = _rewardSharesUser(user);
 
@@ -83,7 +83,7 @@ abstract contract RewardManager is IRewardManager {
         virtual
         returns (uint256[] memory rewardAmounts)
     {
-        address[] memory rewardTokens = getRewardTokens();
+        address[] memory rewardTokens = _getRewardTokens();
 
         rewardAmounts = new uint256[](rewardTokens.length);
         for (uint256 i = 0; i < rewardTokens.length; ++i) {

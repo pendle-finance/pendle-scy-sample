@@ -82,15 +82,4 @@ contract PendleWstEthSCY is SCYBase {
     function isValidBaseToken(address token) public view virtual override returns (bool) {
         return token == stETH || token == wstETH;
     }
-
-    /*///////////////////////////////////////////////////////////////
-                               REWARDS-RELATED
-    //////////////////////////////////////////////////////////////*/
-
-    //solhint-disable-next-line no-empty-blocks
-    function claimRewards(address user) public virtual override returns (uint256[] memory) {}
-
-    function getRewardTokens() public view virtual override returns (address[] memory res) {
-        res = new address[](0);
-    }
 }

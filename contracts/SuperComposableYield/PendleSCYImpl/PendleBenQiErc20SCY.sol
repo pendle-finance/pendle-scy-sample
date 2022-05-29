@@ -56,18 +56,17 @@ contract PendleBenQiErc20SCY is SCYBaseWithRewards {
         override
         returns (uint256 amountSharesOut)
     {
-        uint256 amountQiToken;
-        if (tokenIn == underlying) {
-            // convert it into qiToken first
+        if (tokenIn == qiToken) {
+            amountSharesOut = amount;
+        } else {
+            // tokenIn is underlying -> convert it into qiToken first
             uint256 preBalanceQiToken = IERC20(qiToken).balanceOf(address(this));
 
             uint256 errCode = IQiErc20(qiToken).mint(amount);
             require(errCode == 0, "mint failed");
 
-            amountQiToken = IERC20(qiToken).balanceOf(address(this)) - preBalanceQiToken;
+            amountSharesOut = IERC20(qiToken).balanceOf(address(this)) - preBalanceQiToken;
         }
-
-        amountSharesOut = amountQiToken;
     }
 
     function _redeem(address tokenOut, uint256 amountSharesToRedeem)
@@ -98,12 +97,6 @@ contract PendleBenQiErc20SCY is SCYBaseWithRewards {
         return exchangeRateStored;
     }
 
-    function getRewardTokens() public view override returns (address[] memory res) {
-        res = new address[](2);
-        res[0] = QI;
-        res[1] = WAVAX;
-    }
-
     /*///////////////////////////////////////////////////////////////
                 MISC FUNCTIONS FOR METADATA
     //////////////////////////////////////////////////////////////*/
@@ -121,6 +114,12 @@ contract PendleBenQiErc20SCY is SCYBaseWithRewards {
     /*///////////////////////////////////////////////////////////////
                                REWARDS-RELATED
     //////////////////////////////////////////////////////////////*/
+
+    function _getRewardTokens() internal view override returns (address[] memory res) {
+        res = new address[](2);
+        res[0] = QI;
+        res[1] = WAVAX;
+    }
 
     function _redeemExternalReward() internal override {
         address[] memory holders = new address[](1);

@@ -38,15 +38,35 @@ abstract contract SCYBaseWithRewards is SCYBase, RewardManager {
         _updateAndDistributeReward(user);
         rewardAmounts = _doTransferOutRewards(user, user);
 
-        emit ClaimRewardss(user, getRewardTokens(), rewardAmounts);
+        emit ClaimRewardss(user, _getRewardTokens(), rewardAmounts);
     }
 
     function getRewardTokens()
-        public
+        external
         view
         virtual
-        override(SCYBase, RewardManager)
-        returns (address[] memory);
+        override
+        returns (address[] memory rewardTokens)
+    {
+        rewardTokens = _getRewardTokens();
+    }
+
+    function accruedRewards(address user)
+        external
+        view
+        virtual
+        override
+        returns (uint256[] memory rewardAmounts)
+    {
+        address[] memory rewardTokens = _getRewardTokens();
+        rewardAmounts = new uint256[](rewardTokens.length);
+        for (uint256 i = 0; i < rewardTokens.length; ) {
+            rewardAmounts[i] = userRewardAccrued[user][rewardTokens[i]];
+            unchecked {
+                i++;
+            }
+        }
+    }
 
     function _rewardSharesTotal() internal virtual override returns (uint256) {
         return totalSupply();

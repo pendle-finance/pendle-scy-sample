@@ -71,6 +71,8 @@ interface ISuperComposableYield is IERC20Metadata {
 
     function claimRewards(address user) external returns (uint256[] memory rewardAmounts);
 
+    function accruedRewards(address user) external view returns (uint256[] memory rewardAmounts);
+
     function getRewardTokens() external view returns (address[] memory);
 
     function yieldToken() external view returns (address);

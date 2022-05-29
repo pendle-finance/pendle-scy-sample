@@ -19,8 +19,6 @@ contract PendleAaveV3SCY is SCYBaseWithRewards {
     uint256 public override exchangeRateStored;
     uint256 private constant PRECISION_INDEX = 1e9;
 
-    address private constant SCALED_ATOKEN_ADDR = address(0x1);
-
     constructor(
         string memory _name,
         string memory _symbol,
@@ -99,12 +97,8 @@ contract PendleAaveV3SCY is SCYBaseWithRewards {
         return res;
     }
 
-    function getRewardTokens() public view override returns (address[] memory res) {
-        res = IAaveRewardsController(rewardsController).getRewardsByAsset(aToken);
-    }
-
     /*///////////////////////////////////////////////////////////////
-                MISC FUNCTIONS FOR METADATA
+                            MISC FUNCTIONS FOR METADATA
     //////////////////////////////////////////////////////////////*/
 
     function getBaseTokens() public view virtual override returns (address[] memory res) {
@@ -121,12 +115,20 @@ contract PendleAaveV3SCY is SCYBaseWithRewards {
                                REWARDS-RELATED
     //////////////////////////////////////////////////////////////*/
 
+    function _getRewardTokens() internal view override returns (address[] memory res) {
+        res = IAaveRewardsController(rewardsController).getRewardsByAsset(aToken);
+    }
+
     function _redeemExternalReward() internal override {
         address[] memory assets = new address[](1);
         assets[0] = aToken;
 
         IAaveRewardsController(rewardsController).claimAllRewards(assets, address(this));
     }
+
+    /*///////////////////////////////////////////////////////////////
+                               INTERNAL-HELPER-FUNCTIONS
+    //////////////////////////////////////////////////////////////*/
 
     function _getReserveNormalizedIncome() internal view returns (uint256) {
         return IAavePool(pool).getReserveNormalizedIncome(underlying);

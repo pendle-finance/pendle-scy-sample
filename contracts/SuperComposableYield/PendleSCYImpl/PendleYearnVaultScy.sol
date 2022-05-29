@@ -40,7 +40,8 @@ contract PendleYearnVaultSCY is SCYBase {
     {
         if (tokenIn == yvToken) {
             amountSharesOut = amountDeposited;
-        } else if (tokenIn == underlying) {
+        } else {
+            // tokenIn == underlying
             uint256 preBalance = IERC20(yvToken).balanceOf(address(this));
             IYearnVault(yvToken).deposit(amountDeposited);
             amountSharesOut = IERC20(yvToken).balanceOf(address(this)) - preBalance; // 1 yvToken = 1 SCY
@@ -87,16 +88,5 @@ contract PendleYearnVaultSCY is SCYBase {
 
     function isValidBaseToken(address token) public view virtual override returns (bool) {
         return token == underlying || token == yvToken;
-    }
-
-    /*///////////////////////////////////////////////////////////////
-                               REWARDS-RELATED
-    //////////////////////////////////////////////////////////////*/
-
-    //solhint-disable-next-line no-empty-blocks
-    function claimRewards(address user) public virtual override returns (uint256[] memory) {}
-
-    function getRewardTokens() public view virtual override returns (address[] memory res) {
-        res = new address[](0);
     }
 }
