@@ -32,6 +32,10 @@ contract PendleYearnVaultSCY is SCYBase {
                     DEPOSIT/REDEEM USING BASE TOKENS
     //////////////////////////////////////////////////////////////*/
 
+    /**
+     * @notice Calculates amount of SCY shares to be minted, given base token and its amount deposited
+     * @dev `tokenIn` is guaranteed to be one of the valid base tokens
+     */
     function _deposit(address tokenIn, uint256 amountDeposited)
         internal
         virtual
@@ -47,6 +51,10 @@ contract PendleYearnVaultSCY is SCYBase {
         }
     }
 
+    /**
+     * @notice Calculates amount of tokens to be redeemed, given amount of SCY to be burned
+     * @dev `tokenOut` is guaranteed to be one of the valid base tokens
+     */
     function _redeem(address tokenOut, uint256 amountSharesToRedeem)
         internal
         virtual
@@ -66,6 +74,10 @@ contract PendleYearnVaultSCY is SCYBase {
                                SCY-INDEX
     //////////////////////////////////////////////////////////////*/
 
+    /**
+     * @notice Calculates and updates the exchange rate of SCY
+     * @dev This SCY acts as a wrapper for yvToken, therefore its own price per share suffices
+     */
     function exchangeRateCurrent() public virtual override returns (uint256) {
         uint256 res = IYearnVault(yvToken).pricePerShare();
 
@@ -79,12 +91,18 @@ contract PendleYearnVaultSCY is SCYBase {
                 MISC FUNCTIONS FOR METADATA
     //////////////////////////////////////////////////////////////*/
 
+    /**
+     * @dev See {ISuperComposableYield-getBaseTokens}
+     */
     function getBaseTokens() public view virtual override returns (address[] memory res) {
         res = new address[](2);
         res[0] = underlying;
         res[1] = yvToken;
     }
 
+    /**
+     * @dev See {ISuperComposableYield-isValidBaseToken}
+     */
     function isValidBaseToken(address token) public view virtual override returns (bool) {
         return token == underlying || token == yvToken;
     }
