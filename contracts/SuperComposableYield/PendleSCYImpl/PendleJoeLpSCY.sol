@@ -7,7 +7,6 @@ import "../../SuperComposableYield/implementations/SCYBase.sol";
 import "./libraries/LogExpMath.sol";
 
 contract PendleJoeLpSCY is SCYBase {
-    using SafeERC20 for IERC20;
     using Math for uint256;
 
     address public immutable joeRouter;
@@ -31,12 +30,9 @@ contract PendleJoeLpSCY is SCYBase {
         joePair = _joePair;
         token0 = IJoePair(joePair).token0();
         token1 = IJoePair(joePair).token1();
-        IERC20(token0).safeIncreaseAllowance(joeRouter, type(uint256).max);
-        IERC20(token1).safeIncreaseAllowance(joeRouter, type(uint256).max);
+        _safeApprove(token0, joeRouter, type(uint256).max);
+        _safeApprove(token1, joeRouter, type(uint256).max);
     }
-
-    // solhint-disable no-empty-blocks
-    receive() external payable {}
 
     /*///////////////////////////////////////////////////////////////
                     DEPOSIT/REDEEM USING BASE TOKENS
@@ -162,12 +158,12 @@ contract PendleJoeLpSCY is SCYBase {
         if (transferResidual) {
             //Returning Residue in token0, if any.
             if (token0Bought - amountA > 0) {
-                IERC20(token0).safeTransfer(msg.sender, token0Bought - amountA);
+                _transferOut(token0, msg.sender, token0Bought - amountA);
             }
 
             //Returning Residue in token1, if any
             if (token1Bought - amountB > 0) {
-                IERC20(token1).safeTransfer(msg.sender, token1Bought - amountB);
+                _transferOut(token1, msg.sender, token1Bought - amountB);
             }
         }
 

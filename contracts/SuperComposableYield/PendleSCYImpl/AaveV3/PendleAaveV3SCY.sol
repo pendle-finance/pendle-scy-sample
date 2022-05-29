@@ -9,7 +9,6 @@ import "./WadRayMath.sol";
 contract PendleAaveV3SCY is SCYBaseWithRewards {
     using Math for uint256;
     using WadRayMath for uint256;
-    using SafeERC20 for IERC20;
 
     address public immutable underlying;
     address public immutable pool;
@@ -34,7 +33,7 @@ contract PendleAaveV3SCY is SCYBaseWithRewards {
         pool = _aavePool;
         underlying = _underlying;
         rewardsController = _rewardsController;
-        IERC20(underlying).safeIncreaseAllowance(pool, type(uint256).max);
+        _safeApprove(underlying, pool, type(uint256).max);
     }
 
     /*///////////////////////////////////////////////////////////////
@@ -68,7 +67,7 @@ contract PendleAaveV3SCY is SCYBaseWithRewards {
         } else {
             uint256 amountATokenToWithdraw = _scaledBalanceToAToken(amountSharesToRedeem);
             IAavePool(pool).withdraw(underlying, amountATokenToWithdraw, address(this));
-            amountTokenOut = IERC20(underlying).balanceOf(address(this));
+            amountTokenOut = _selfBalance(underlying);
         }
     }
 
@@ -77,7 +76,7 @@ contract PendleAaveV3SCY is SCYBaseWithRewards {
     }
 
     function _getFloatingAmount(address token) internal view virtual override returns (uint256) {
-        if (token != aToken) return IERC20(token).balanceOf(address(this));
+        if (token != aToken) return _selfBalance(token);
         // the only reserve token is aToken
         uint256 scaledATokenAmount = IAToken(aToken).scaledBalanceOf(address(this)) -
             yieldTokenReserve;

@@ -6,8 +6,6 @@ import "../../interfaces/IWXBTRFLY.sol";
 import "../../interfaces/IREDACTEDStaking.sol";
 
 contract PendleBtrflyScy is SCYBase {
-    using SafeERC20 for IERC20;
-
     address public immutable BTRFLY;
     address public immutable xBTRFLY;
     address public immutable wxBTRFLY;
@@ -28,8 +26,8 @@ contract PendleBtrflyScy is SCYBase {
         BTRFLY = _BTRFLY;
         xBTRFLY = _xBTRFLY;
         wxBTRFLY = _wxBTRFLY;
-        IERC20(BTRFLY).safeIncreaseAllowance(wxBTRFLY, type(uint256).max);
-        IERC20(xBTRFLY).safeIncreaseAllowance(wxBTRFLY, type(uint256).max);
+        _safeApprove(BTRFLY, wxBTRFLY, type(uint256).max);
+        _safeApprove(xBTRFLY, wxBTRFLY, type(uint256).max);
     }
 
     /*///////////////////////////////////////////////////////////////

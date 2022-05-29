@@ -2,11 +2,10 @@
 pragma solidity 0.8.9;
 import "../ISuperComposableYield.sol";
 import "./IRewardManager.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "../../libraries/math/Math.sol";
+import "./TokenHelper.sol";
 
-abstract contract RewardManager is IRewardManager {
-    using SafeERC20 for IERC20;
+abstract contract RewardManager is IRewardManager, TokenHelper {
     using Math for uint256;
 
     uint256 public lastRewardBlock;
@@ -44,7 +43,7 @@ abstract contract RewardManager is IRewardManager {
 
             uint256 rewardIndex = rewardState[token].index;
 
-            uint256 currentBalance = IERC20(token).balanceOf(address(this));
+            uint256 currentBalance = _selfBalance(token);
             uint256 rewardAccrued = currentBalance - rewardState[token].lastBalance;
 
             if (rewardIndex == 0) rewardIndex = INITIAL_REWARD_INDEX;
@@ -95,7 +94,7 @@ abstract contract RewardManager is IRewardManager {
             rewardState[token].lastBalance -= rewardAmounts[i];
 
             if (rewardAmounts[i] != 0) {
-                IERC20(token).safeTransfer(receiver, rewardAmounts[i]);
+                _transferOut(token, receiver, rewardAmounts[i]);
             }
         }
     }

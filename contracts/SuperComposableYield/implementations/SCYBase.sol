@@ -2,14 +2,13 @@
 pragma solidity 0.8.9;
 import "../ISuperComposableYield.sol";
 import "./RewardManager.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "../../libraries/math/Math.sol";
 import "./SCYUtils.sol";
+import "./TokenHelper.sol";
 
-abstract contract SCYBase is ISuperComposableYield, ERC20, ReentrancyGuard {
-    using SafeERC20 for IERC20;
+abstract contract SCYBase is ISuperComposableYield, ERC20, ReentrancyGuard, TokenHelper {
     using Math for uint256;
 
     uint8 private immutable _sharesDecimals;
@@ -40,6 +39,9 @@ abstract contract SCYBase is ISuperComposableYield, ERC20, ReentrancyGuard {
         assetId = __assetId;
     }
 
+    // solhint-disable no-empty-blocks
+    receive() external payable {}
+
     /*///////////////////////////////////////////////////////////////
                     DEPOSIT/REDEEM USING BASE TOKENS
     //////////////////////////////////////////////////////////////*/
@@ -49,11 +51,12 @@ abstract contract SCYBase is ISuperComposableYield, ERC20, ReentrancyGuard {
         address tokenIn,
         uint256 amountTokenToPull,
         uint256 minSharesOut
-    ) external nonReentrant updateReserve returns (uint256 amountSharesOut) {
+    ) external payable nonReentrant updateReserve returns (uint256 amountSharesOut) {
         require(isValidBaseToken(tokenIn), "SCY: Invalid tokenIn");
 
-        if (amountTokenToPull != 0)
-            IERC20(tokenIn).safeTransferFrom(msg.sender, address(this), amountTokenToPull);
+        if (amountTokenToPull != 0) {
+            _transferIn(tokenIn, msg.sender, amountTokenToPull);
+        }
 
         uint256 amountDeposited = _getFloatingAmount(tokenIn);
 
@@ -79,7 +82,7 @@ abstract contract SCYBase is ISuperComposableYield, ERC20, ReentrancyGuard {
         amountTokenOut = _redeem(tokenOut, amountSharesToRedeem);
         require(amountTokenOut >= minTokenOut, "insufficient out");
 
-        IERC20(tokenOut).safeTransfer(receiver, amountTokenOut);
+        _transferOut(tokenOut, receiver, amountTokenOut);
         _burn(address(this), amountSharesToRedeem);
 
         emit Redeem(msg.sender, receiver, tokenOut, amountSharesToRedeem, amountTokenOut);
@@ -96,12 +99,12 @@ abstract contract SCYBase is ISuperComposableYield, ERC20, ReentrancyGuard {
         returns (uint256 amountTokenOut);
 
     function _updateReserve() internal virtual {
-        yieldTokenReserve = IERC20(yieldToken).balanceOf(address(this));
+        yieldTokenReserve = _selfBalance(yieldToken);
     }
 
     function _getFloatingAmount(address token) internal view virtual returns (uint256) {
-        if (token != yieldToken) return IERC20(token).balanceOf(address(this));
-        return IERC20(token).balanceOf(address(this)) - yieldTokenReserve;
+        if (token != yieldToken) return _selfBalance(token);
+        return _selfBalance(token) - yieldTokenReserve;
     }
 
     /*///////////////////////////////////////////////////////////////

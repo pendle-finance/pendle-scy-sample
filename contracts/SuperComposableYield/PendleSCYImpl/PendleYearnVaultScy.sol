@@ -3,11 +3,8 @@ pragma solidity 0.8.9;
 
 import "../../SuperComposableYield/implementations/SCYBase.sol";
 import "../../interfaces/IYearnVault.sol";
-import "../../interfaces/IQiErc20.sol";
 
 contract PendleYearnVaultSCY is SCYBase {
-    using SafeERC20 for IERC20;
-
     address public immutable underlying;
     address public immutable yvToken;
 
@@ -25,7 +22,7 @@ contract PendleYearnVaultSCY is SCYBase {
         require(_yvToken != address(0), "zero address");
         yvToken = _yvToken;
         underlying = _underlying;
-        IERC20(underlying).safeIncreaseAllowance(yvToken, type(uint256).max);
+        _safeApprove(underlying, yvToken, type(uint256).max);
     }
 
     /*///////////////////////////////////////////////////////////////
@@ -42,9 +39,9 @@ contract PendleYearnVaultSCY is SCYBase {
             amountSharesOut = amountDeposited;
         } else {
             // tokenIn == underlying
-            uint256 preBalance = IERC20(yvToken).balanceOf(address(this));
+            uint256 preBalance = _selfBalance(yvToken);
             IYearnVault(yvToken).deposit(amountDeposited);
-            amountSharesOut = IERC20(yvToken).balanceOf(address(this)) - preBalance; // 1 yvToken = 1 SCY
+            amountSharesOut = _selfBalance(yvToken) - preBalance; // 1 yvToken = 1 SCY
         }
     }
 
@@ -59,7 +56,7 @@ contract PendleYearnVaultSCY is SCYBase {
         } else {
             // tokenOut == underlying
             IYearnVault(yvToken).withdraw(amountSharesToRedeem);
-            amountTokenOut = IERC20(underlying).balanceOf(address(this));
+            amountTokenOut = _selfBalance(underlying);
         }
     }
 

@@ -49,7 +49,7 @@ interface ISuperComposableYield is IERC20Metadata {
         address tokenIn,
         uint256 amountTokenToPull,
         uint256 minSharesOut
-    ) external returns (uint256 amountSharesOut);
+    ) external payable returns (uint256 amountSharesOut);
 
     function redeem(
         address receiver,

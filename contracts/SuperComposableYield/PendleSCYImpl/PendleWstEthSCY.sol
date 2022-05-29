@@ -4,8 +4,6 @@ import "../../SuperComposableYield/implementations/SCYBase.sol";
 import "../../interfaces/IWstETH.sol";
 
 contract PendleWstEthSCY is SCYBase {
-    using SafeERC20 for IERC20;
-
     address public immutable stETH;
     address public immutable wstETH;
 
@@ -23,7 +21,7 @@ contract PendleWstEthSCY is SCYBase {
         require(_wstETH != address(0), "zero address");
         stETH = _stETH;
         wstETH = _wstETH;
-        IERC20(stETH).safeIncreaseAllowance(wstETH, type(uint256).max);
+        _safeApprove(stETH, wstETH, type(uint256).max);
     }
 
     /*///////////////////////////////////////////////////////////////

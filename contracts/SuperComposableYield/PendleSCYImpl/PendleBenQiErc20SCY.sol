@@ -7,8 +7,6 @@ import "../../interfaces/IBenQiComptroller.sol";
 import "../../interfaces/IWETH.sol";
 
 contract PendleBenQiErc20SCY is SCYBaseWithRewards {
-    using SafeERC20 for IERC20;
-
     address public immutable underlying;
     address public immutable QI;
     address public immutable WAVAX;
@@ -41,11 +39,8 @@ contract PendleBenQiErc20SCY is SCYBaseWithRewards {
         WAVAX = _WAVAX;
         comptroller = _comptroller;
         underlying = _underlying;
-        IERC20(underlying).safeIncreaseAllowance(qiToken, type(uint256).max);
+        _safeApprove(underlying, qiToken, type(uint256).max);
     }
-
-    // solhint-disable no-empty-blocks
-    receive() external payable {}
 
     /*///////////////////////////////////////////////////////////////
                     DEPOSIT/REDEEM USING BASE TOKENS
@@ -60,12 +55,12 @@ contract PendleBenQiErc20SCY is SCYBaseWithRewards {
             amountSharesOut = amount;
         } else {
             // tokenIn is underlying -> convert it into qiToken first
-            uint256 preBalanceQiToken = IERC20(qiToken).balanceOf(address(this));
+            uint256 preBalanceQiToken = _selfBalance(qiToken);
 
             uint256 errCode = IQiErc20(qiToken).mint(amount);
             require(errCode == 0, "mint failed");
 
-            amountSharesOut = IERC20(qiToken).balanceOf(address(this)) - preBalanceQiToken;
+            amountSharesOut = _selfBalance(qiToken) - preBalanceQiToken;
         }
     }
 
@@ -80,7 +75,7 @@ contract PendleBenQiErc20SCY is SCYBaseWithRewards {
             uint256 errCode = IQiErc20(qiToken).redeem(amountSharesToRedeem);
             require(errCode == 0, "redeem failed");
 
-            amountBaseOut = IERC20(underlying).balanceOf(address(this));
+            amountBaseOut = _selfBalance(underlying);
         }
     }
 
