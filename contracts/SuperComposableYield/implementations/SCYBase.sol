@@ -54,9 +54,8 @@ abstract contract SCYBase is ISuperComposableYield, ERC20, ReentrancyGuard, Toke
     ) external payable nonReentrant updateReserve returns (uint256 amountSharesOut) {
         require(isValidBaseToken(tokenIn), "SCY: Invalid tokenIn");
 
-        if (amountTokenToPull != 0) {
-            _transferIn(tokenIn, msg.sender, amountTokenToPull);
-        }
+        if (tokenIn == NATIVE) require(amountTokenToPull == 0, "can't pull eth");
+        else if (amountTokenToPull != 0) _transferIn(tokenIn, msg.sender, amountTokenToPull);
 
         uint256 amountDeposited = _getFloatingAmount(tokenIn);
 
@@ -77,13 +76,13 @@ abstract contract SCYBase is ISuperComposableYield, ERC20, ReentrancyGuard, Toke
 
         if (amountSharesToPull != 0) transferFrom(msg.sender, address(this), amountSharesToPull);
 
-        uint256 amountSharesToRedeem = balanceOf(address(this));
+        uint256 amountSharesToRedeem = _getFloatingAmount(address(this));
 
         amountTokenOut = _redeem(tokenOut, amountSharesToRedeem);
         require(amountTokenOut >= minTokenOut, "insufficient out");
 
-        _transferOut(tokenOut, receiver, amountTokenOut);
         _burn(address(this), amountSharesToRedeem);
+        _transferOut(tokenOut, receiver, amountTokenOut);
 
         emit Redeem(msg.sender, receiver, tokenOut, amountSharesToRedeem, amountTokenOut);
     }
