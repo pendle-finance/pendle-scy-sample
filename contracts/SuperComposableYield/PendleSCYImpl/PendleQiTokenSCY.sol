@@ -92,13 +92,12 @@ contract PendleQiTokenSCY is SCYBaseWithRewards {
                                EXCHANGE-RATE
     //////////////////////////////////////////////////////////////*/
 
-    function exchangeRateCurrent() public override returns (uint256) {
-        uint256 res = IQiToken(qiToken).exchangeRateCurrent();
+    function exchangeRateCurrent() public override returns (uint256 currentRate) {
+        currentRate = IQiToken(qiToken).exchangeRateCurrent();
 
-        exchangeRateStored = res;
-        emit NewExchangeRate(res);
+        emit ExchangeRateUpdated(exchangeRateStored, currentRate);
 
-        return exchangeRateStored;
+        exchangeRateStored = currentRate;
     }
 
     /*///////////////////////////////////////////////////////////////

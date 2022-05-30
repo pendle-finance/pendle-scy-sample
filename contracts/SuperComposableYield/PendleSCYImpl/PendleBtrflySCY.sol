@@ -69,13 +69,12 @@ contract PendleBtrflyScy is SCYBase {
                                EXCHANGE-RATE
     //////////////////////////////////////////////////////////////*/
 
-    function exchangeRateCurrent() public virtual override returns (uint256) {
-        uint256 res = IWXBTRFLY(wxBTRFLY).xBTRFLYValue(Math.ONE);
+    function exchangeRateCurrent() public virtual override returns (uint256 currentRate) {
+        currentRate = IWXBTRFLY(wxBTRFLY).xBTRFLYValue(Math.ONE);
 
-        exchangeRateStored = res;
-        emit NewExchangeRate(res);
+        emit ExchangeRateUpdated(exchangeRateStored, currentRate);
 
-        return res;
+        exchangeRateStored = currentRate;
     }
 
     /*///////////////////////////////////////////////////////////////

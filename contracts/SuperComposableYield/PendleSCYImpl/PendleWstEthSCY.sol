@@ -55,13 +55,12 @@ contract PendleWstEthSCY is SCYBase {
                                EXCHANGE-RATE
     //////////////////////////////////////////////////////////////*/
 
-    function exchangeRateCurrent() public virtual override returns (uint256) {
-        uint256 res = IWstETH(wstETH).stEthPerToken();
+    function exchangeRateCurrent() public virtual override returns (uint256 currentRate) {
+        currentRate = IWstETH(wstETH).stEthPerToken();
 
-        exchangeRateStored = res;
-        emit NewExchangeRate(res);
+        emit ExchangeRateUpdated(exchangeRateStored, currentRate);
 
-        return res;
+        exchangeRateStored = currentRate;
     }
 
     /*///////////////////////////////////////////////////////////////

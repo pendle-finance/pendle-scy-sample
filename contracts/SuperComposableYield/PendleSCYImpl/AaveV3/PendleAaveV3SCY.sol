@@ -88,13 +88,12 @@ contract PendleAaveV3SCY is SCYBaseWithRewards {
                                EXCHANGE-RATE
     //////////////////////////////////////////////////////////////*/
 
-    function exchangeRateCurrent() public virtual override returns (uint256) {
-        uint256 res = _getReserveNormalizedIncome() / PRECISION_INDEX;
+    function exchangeRateCurrent() public virtual override returns (uint256 currentRate) {
+        currentRate = _getReserveNormalizedIncome() / PRECISION_INDEX;
 
-        exchangeRateStored = res;
-        emit NewExchangeRate(res);
+        emit ExchangeRateUpdated(exchangeRateStored, currentRate);
 
-        return res;
+        exchangeRateStored = currentRate;
     }
 
     /*///////////////////////////////////////////////////////////////

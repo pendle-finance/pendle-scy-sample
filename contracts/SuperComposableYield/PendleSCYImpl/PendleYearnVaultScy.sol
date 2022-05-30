@@ -61,13 +61,12 @@ contract PendleYearnVaultSCY is SCYBase {
                                EXCHANGE-RATE
     //////////////////////////////////////////////////////////////*/
 
-    function exchangeRateCurrent() public virtual override returns (uint256) {
-        uint256 res = IYearnVault(yvToken).pricePerShare();
+    function exchangeRateCurrent() public override returns (uint256 currentRate) {
+        currentRate = IYearnVault(yvToken).pricePerShare();
 
-        exchangeRateStored = res;
-        emit NewExchangeRate(res);
+        emit ExchangeRateUpdated(exchangeRateStored, currentRate);
 
-        return res;
+        exchangeRateStored = currentRate;
     }
 
     /*///////////////////////////////////////////////////////////////

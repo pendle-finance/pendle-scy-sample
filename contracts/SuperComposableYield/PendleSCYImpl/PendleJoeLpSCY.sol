@@ -63,18 +63,17 @@ contract PendleJoeLpSCY is SCYBase {
                                EXCHANGE-RATE
     //////////////////////////////////////////////////////////////*/
 
-    function exchangeRateCurrent() public override returns (uint256) {
+    function exchangeRateCurrent() public override returns (uint256 currentRate) {
         (uint256 reserve0, uint256 reserve1, ) = IJoePair(joePair).getReserves();
 
         // K = sqrt(reserve0 * reserve1) = pow(reserve0*reserve1, 0.5)
         uint256 currentK = LogExpMath.pow(reserve0 * reserve1, uint256(LogExpMath.ONE_18 / 2));
         uint256 totalSupply = IJoePair(joePair).totalSupply();
-        uint256 rate = currentK.divDown(totalSupply);
+        currentRate = currentK.divDown(totalSupply);
 
-        exchangeRateStored = rate;
-        emit NewExchangeRate(rate);
+        emit ExchangeRateUpdated(exchangeRateStored, currentRate);
 
-        return rate;
+        exchangeRateStored = currentRate;
     }
 
     /*///////////////////////////////////////////////////////////////

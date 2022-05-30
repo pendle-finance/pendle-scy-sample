@@ -25,7 +25,8 @@ pragma solidity 0.8.9;
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
 interface ISuperComposableYield is IERC20Metadata {
-    event NewExchangeRate(uint256 exchangeRate);
+    event ExchangeRateUpdated(uint256 oldExchangeRate, uint256 newExchangeRate);
+
     event Deposit(
         address indexed caller,
         address indexed receiver,
