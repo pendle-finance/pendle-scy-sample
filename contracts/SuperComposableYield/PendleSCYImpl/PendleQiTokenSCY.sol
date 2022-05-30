@@ -3,10 +3,11 @@ pragma solidity 0.8.9;
 
 import "../../SuperComposableYield/implementations/SCYBaseWithRewards.sol";
 import "../../interfaces/IQiErc20.sol";
+import "../../interfaces/IQiAvax.sol";
 import "../../interfaces/IBenQiComptroller.sol";
 import "../../interfaces/IWETH.sol";
 
-contract PendleBenQiErc20SCY is SCYBaseWithRewards {
+contract PendleQiTokenSCY is SCYBaseWithRewards {
     address public immutable underlying;
     address public immutable QI;
     address public immutable WAVAX;
@@ -39,7 +40,9 @@ contract PendleBenQiErc20SCY is SCYBaseWithRewards {
         WAVAX = _WAVAX;
         comptroller = _comptroller;
         underlying = _underlying;
-        _safeApprove(underlying, qiToken, type(uint256).max);
+        if (underlying != NATIVE) {
+            _safeApprove(underlying, qiToken, type(uint256).max);
+        }
     }
 
     /*///////////////////////////////////////////////////////////////
@@ -57,8 +60,12 @@ contract PendleBenQiErc20SCY is SCYBaseWithRewards {
             // tokenIn is underlying -> convert it into qiToken first
             uint256 preBalanceQiToken = _selfBalance(qiToken);
 
-            uint256 errCode = IQiErc20(qiToken).mint(amount);
-            require(errCode == 0, "mint failed");
+            if (underlying == NATIVE) {
+                IQiAvax(qiToken).mint{ value: amount }();
+            } else {
+                uint256 errCode = IQiErc20(qiToken).mint(amount);
+                require(errCode == 0, "mint failed");
+            }
 
             amountSharesOut = _selfBalance(qiToken) - preBalanceQiToken;
         }
@@ -72,8 +79,13 @@ contract PendleBenQiErc20SCY is SCYBaseWithRewards {
         if (tokenOut == qiToken) {
             amountBaseOut = amountSharesToRedeem;
         } else {
-            uint256 errCode = IQiErc20(qiToken).redeem(amountSharesToRedeem);
-            require(errCode == 0, "redeem failed");
+            if (underlying == NATIVE) {
+                uint256 errCode = IQiAvax(qiToken).redeem(amountSharesToRedeem);
+                require(errCode == 0, "redeem failed");
+            } else {
+                uint256 errCode = IQiErc20(qiToken).redeem(amountSharesToRedeem);
+                require(errCode == 0, "redeem failed");
+            }
 
             amountBaseOut = _selfBalance(underlying);
         }

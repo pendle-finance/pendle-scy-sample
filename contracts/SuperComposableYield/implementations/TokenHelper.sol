@@ -5,14 +5,14 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 abstract contract TokenHelper {
     using SafeERC20 for IERC20;
-    address internal constant ETH = address(0);
+    address internal constant NATIVE = address(0);
 
     function _transferIn(
         address token,
         address from,
         uint256 amount
     ) internal {
-        if (token == ETH) return;
+        if (token == NATIVE) return;
         IERC20(token).safeTransferFrom(from, address(this), amount);
     }
 
@@ -21,7 +21,7 @@ abstract contract TokenHelper {
         address to,
         uint256 amount
     ) internal {
-        if (token == ETH) {
+        if (token == NATIVE) {
             (bool success, ) = to.call{ value: amount }("");
             require(success, "eth send failed");
         } else {
@@ -30,7 +30,7 @@ abstract contract TokenHelper {
     }
 
     function _selfBalance(address token) internal view returns (uint256) {
-        return (token == ETH) ? address(this).balance : IERC20(token).balanceOf(address(this));
+        return (token == NATIVE) ? address(this).balance : IERC20(token).balanceOf(address(this));
     }
 
     /// @notice Approves the stipulated contract to spend the given allowance in the given token
