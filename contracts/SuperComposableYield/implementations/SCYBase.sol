@@ -11,11 +11,6 @@ import "./TokenHelper.sol";
 abstract contract SCYBase is ISuperComposableYield, ERC20, ReentrancyGuard, TokenHelper {
     using Math for uint256;
 
-    uint8 private immutable _sharesDecimals;
-
-    uint8 public immutable assetDecimals;
-    bytes32 public immutable assetId;
-
     address public immutable yieldToken;
 
     uint256 public yieldTokenReserve;
@@ -28,15 +23,9 @@ abstract contract SCYBase is ISuperComposableYield, ERC20, ReentrancyGuard, Toke
     constructor(
         string memory _name,
         string memory _symbol,
-        address _yieldToken,
-        uint8 __sharesDecimals,
-        uint8 __assetDecimals,
-        bytes32 __assetId
+        address _yieldToken
     ) ERC20(_name, _symbol) {
         yieldToken = _yieldToken;
-        _sharesDecimals = __sharesDecimals;
-        assetDecimals = __assetDecimals;
-        assetId = __assetId;
     }
 
     // solhint-disable no-empty-blocks
@@ -145,7 +134,7 @@ abstract contract SCYBase is ISuperComposableYield, ERC20, ReentrancyGuard, Toke
     //////////////////////////////////////////////////////////////*/
 
     function decimals() public view virtual override(ERC20, IERC20Metadata) returns (uint8) {
-        return _sharesDecimals;
+        return 18;
     }
 
     function getBaseTokens() external view virtual override returns (address[] memory res);

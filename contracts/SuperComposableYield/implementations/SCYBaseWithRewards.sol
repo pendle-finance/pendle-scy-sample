@@ -12,16 +12,10 @@ abstract contract SCYBaseWithRewards is SCYBase, RewardManager {
     constructor(
         string memory _name,
         string memory _symbol,
-        address _yieldToken,
-        uint8 __scydecimals,
-        uint8 __assetDecimals,
-        bytes32 __assetId
+        address _yieldToken
     )
-        SCYBase(_name, _symbol, yieldToken, __scydecimals, __assetDecimals, __assetId)
-    // solhint-disable-next-line no-empty-blocks
-    {
-
-    }
+        SCYBase(_name, _symbol, yieldToken) // solhint-disable-next-line no-empty-blocks
+    {}
 
     /*///////////////////////////////////////////////////////////////
                                REWARDS-RELATED
@@ -36,7 +30,7 @@ abstract contract SCYBaseWithRewards is SCYBase, RewardManager {
         _updateAndDistributeReward(user);
         rewardAmounts = _doTransferOutRewards(user, user);
 
-        emit ClaimRewardss(user, _getRewardTokens(), rewardAmounts);
+        emit ClaimRewards(user, _getRewardTokens(), rewardAmounts);
     }
 
     function getRewardTokens()

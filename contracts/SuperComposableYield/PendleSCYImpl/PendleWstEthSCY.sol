@@ -12,12 +12,9 @@ contract PendleWstEthSCY is SCYBase {
     constructor(
         string memory _name,
         string memory _symbol,
-        uint8 __scydecimals,
-        uint8 __assetDecimals,
         address _stETH,
-        address _wstETH,
-        bytes32 __assetId
-    ) SCYBase(_name, _symbol, _wstETH, __scydecimals, __assetDecimals, __assetId) {
+        address _wstETH
+    ) SCYBase(_name, _symbol, _wstETH) {
         require(_wstETH != address(0), "zero address");
         stETH = _stETH;
         wstETH = _wstETH;
@@ -55,7 +52,7 @@ contract PendleWstEthSCY is SCYBase {
     }
 
     /*///////////////////////////////////////////////////////////////
-                               SCY-INDEX
+                               EXCHANGE-RATE
     //////////////////////////////////////////////////////////////*/
 
     function exchangeRateCurrent() public virtual override returns (uint256) {
@@ -79,5 +76,17 @@ contract PendleWstEthSCY is SCYBase {
 
     function isValidBaseToken(address token) public view virtual override returns (bool) {
         return token == stETH || token == wstETH;
+    }
+
+    function assetInfo()
+        external
+        view
+        returns (
+            AssetType assetType,
+            address assetAddress,
+            uint8 assetDecimals
+        )
+    {
+        return (AssetType.TOKEN, stETH, IERC20Metadata(stETH).decimals());
     }
 }

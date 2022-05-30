@@ -19,15 +19,12 @@ contract PendleQiTokenSCY is SCYBaseWithRewards {
     constructor(
         string memory _name,
         string memory _symbol,
-        uint8 __sharesdecimals,
-        uint8 __assetDecimals,
-        bytes32 __assetId,
         address _underlying,
         address _qiToken,
         address _comptroller,
         address _QI,
         address _WAVAX
-    ) SCYBaseWithRewards(_name, _symbol, _qiToken, __sharesdecimals, __assetDecimals, __assetId) {
+    ) SCYBaseWithRewards(_name, _symbol, _qiToken) {
         require(
             _qiToken != address(0) &&
                 _QI != address(0) &&
@@ -105,20 +102,6 @@ contract PendleQiTokenSCY is SCYBaseWithRewards {
     }
 
     /*///////////////////////////////////////////////////////////////
-                MISC FUNCTIONS FOR METADATA
-    //////////////////////////////////////////////////////////////*/
-
-    function getBaseTokens() public view override returns (address[] memory res) {
-        res = new address[](2);
-        res[0] = qiToken;
-        res[1] = underlying;
-    }
-
-    function isValidBaseToken(address token) public view override returns (bool res) {
-        res = (token == underlying || token == qiToken);
-    }
-
-    /*///////////////////////////////////////////////////////////////
                                REWARDS-RELATED
     //////////////////////////////////////////////////////////////*/
 
@@ -138,5 +121,35 @@ contract PendleQiTokenSCY is SCYBaseWithRewards {
         IBenQiComptroller(comptroller).claimReward(1, holders, qiTokens, false, true);
 
         if (address(this).balance != 0) IWETH(WAVAX).deposit{ value: address(this).balance };
+    }
+
+    /*///////////////////////////////////////////////////////////////
+                    MISC FUNCTIONS FOR METADATA
+    //////////////////////////////////////////////////////////////*/
+
+    function getBaseTokens() public view override returns (address[] memory res) {
+        res = new address[](2);
+        res[0] = qiToken;
+        res[1] = underlying;
+    }
+
+    function isValidBaseToken(address token) public view override returns (bool res) {
+        res = (token == underlying || token == qiToken);
+    }
+
+    function assetInfo()
+        external
+        view
+        returns (
+            AssetType assetType,
+            address assetAddress,
+            uint8 assetDecimals
+        )
+    {
+        return (
+            AssetType.TOKEN,
+            underlying,
+            underlying == NATIVE ? 18 : IERC20Metadata(underlying).decimals()
+        );
     }
 }

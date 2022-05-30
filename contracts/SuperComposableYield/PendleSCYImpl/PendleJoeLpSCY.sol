@@ -19,12 +19,9 @@ contract PendleJoeLpSCY is SCYBase {
     constructor(
         string memory _name,
         string memory _symbol,
-        uint8 __sharesdecimals,
-        uint8 __assetDecimals,
-        bytes32 __assetId,
         address _joeRouter,
         address _joePair
-    ) SCYBase(_name, _symbol, _joePair, __sharesdecimals, __assetDecimals, __assetId) {
+    ) SCYBase(_name, _symbol, _joePair) {
         require(_joeRouter != address(0), "zero address");
         joeRouter = _joeRouter;
         joePair = _joePair;
@@ -93,6 +90,18 @@ contract PendleJoeLpSCY is SCYBase {
 
     function isValidBaseToken(address token) public view override returns (bool res) {
         res = (token == token0 || token == token1 || token == joePair);
+    }
+
+    function assetInfo()
+        external
+        view
+        returns (
+            AssetType assetType,
+            address assetAddress,
+            uint8 assetDecimals
+        )
+    {
+        return (AssetType.LIQUIDITY, joePair, IERC20Metadata(joePair).decimals());
     }
 
     /*///////////////////////////////////////////////////////////////

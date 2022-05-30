@@ -21,16 +21,17 @@ contract PendleAaveV3SCY is SCYBaseWithRewards {
     constructor(
         string memory _name,
         string memory _symbol,
-        uint8 __scydecimals,
-        uint8 __assetDecimals,
-        bytes32 __assetId,
-        address _aavePool,
+        address _pool,
         address _underlying,
         address _aToken,
         address _rewardsController
-    ) SCYBaseWithRewards(_name, _symbol, _aToken, __scydecimals, __assetDecimals, __assetId) {
+    ) SCYBaseWithRewards(_name, _symbol, _aToken) {
+        require(
+            _aToken != address(0) && _rewardsController != address(0) && _pool != address(0),
+            "zero address"
+        );
         aToken = _aToken;
-        pool = _aavePool;
+        pool = _pool;
         underlying = _underlying;
         rewardsController = _rewardsController;
         _safeApprove(underlying, pool, type(uint256).max);
@@ -84,7 +85,7 @@ contract PendleAaveV3SCY is SCYBaseWithRewards {
     }
 
     /*///////////////////////////////////////////////////////////////
-                               SCY-INDEX
+                               EXCHANGE-RATE
     //////////////////////////////////////////////////////////////*/
 
     function exchangeRateCurrent() public virtual override returns (uint256) {
@@ -94,20 +95,6 @@ contract PendleAaveV3SCY is SCYBaseWithRewards {
         emit NewExchangeRate(res);
 
         return res;
-    }
-
-    /*///////////////////////////////////////////////////////////////
-                            MISC FUNCTIONS FOR METADATA
-    //////////////////////////////////////////////////////////////*/
-
-    function getBaseTokens() public view virtual override returns (address[] memory res) {
-        res = new address[](2);
-        res[0] = underlying;
-        res[1] = aToken;
-    }
-
-    function isValidBaseToken(address token) public view virtual override returns (bool res) {
-        res = (token == underlying || token == aToken);
     }
 
     /*///////////////////////////////////////////////////////////////
@@ -139,5 +126,31 @@ contract PendleAaveV3SCY is SCYBaseWithRewards {
 
     function _scaledBalanceToAToken(uint256 scaledAmount) internal view returns (uint256) {
         return scaledAmount.rayMul(_getReserveNormalizedIncome());
+    }
+
+    /*///////////////////////////////////////////////////////////////
+                            MISC FUNCTIONS FOR METADATA
+    //////////////////////////////////////////////////////////////*/
+
+    function getBaseTokens() public view virtual override returns (address[] memory res) {
+        res = new address[](2);
+        res[0] = underlying;
+        res[1] = aToken;
+    }
+
+    function isValidBaseToken(address token) public view virtual override returns (bool res) {
+        res = (token == underlying || token == aToken);
+    }
+
+    function assetInfo()
+        external
+        view
+        returns (
+            AssetType assetType,
+            address assetAddress,
+            uint8 assetDecimals
+        )
+    {
+        return (AssetType.TOKEN, underlying, IERC20Metadata(underlying).decimals());
     }
 }

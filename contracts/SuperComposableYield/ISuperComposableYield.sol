@@ -42,7 +42,12 @@ interface ISuperComposableYield is IERC20Metadata {
         uint256 amountTokenOut
     );
 
-    event ClaimRewardss(address indexed user, address[] rewardTokens, uint256[] rewardAmounts);
+    enum AssetType {
+        TOKEN,
+        LIQUIDITY
+    }
+
+    event ClaimRewards(address indexed user, address[] rewardTokens, uint256[] rewardAmounts);
 
     function deposit(
         address receiver,
@@ -84,9 +89,17 @@ interface ISuperComposableYield is IERC20Metadata {
     /**
     * @notice This function contains information to interpret what the asset is
     * @notice decimals is the decimals to format asset balances
-    * @notice if asset is an ERC20 token, assetType = 0, info is abi.encode(asset token address)
-    * @notice if asset is liquidity of an AMM (like sqrt(k) in UniswapV2 forks), assetType = 1, 
-    info is abi.encode(address of the AMM pool)
+    * @notice if asset is an ERC20 token, assetType = 0, assetAddress is the address of the token
+    * @notice if asset is liquidity of an AMM (like sqrt(k) in UniswapV2 forks), assetType = 1,
+    assetAddress is the address of the LP token
+    * @notice assetDecimals is the decimals of the asset
     */
-    function assetInfo() external view returns (uint8 assetType, uint8 decimals, bytes info);
+    function assetInfo()
+        external
+        view
+        returns (
+            AssetType assetType,
+            address assetAddress,
+            uint8 assetDecimals
+        );
 }

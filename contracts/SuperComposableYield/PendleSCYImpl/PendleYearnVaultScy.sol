@@ -13,12 +13,9 @@ contract PendleYearnVaultSCY is SCYBase {
     constructor(
         string memory _name,
         string memory _symbol,
-        uint8 __scydecimals,
-        uint8 __assetDecimals,
-        bytes32 __assetId,
         address _underlying,
         address _yvToken
-    ) SCYBase(_name, _symbol, _yvToken, __scydecimals, __assetDecimals, __assetId) {
+    ) SCYBase(_name, _symbol, _yvToken) {
         require(_yvToken != address(0), "zero address");
         yvToken = _yvToken;
         underlying = _underlying;
@@ -61,7 +58,7 @@ contract PendleYearnVaultSCY is SCYBase {
     }
 
     /*///////////////////////////////////////////////////////////////
-                               SCY-INDEX
+                               EXCHANGE-RATE
     //////////////////////////////////////////////////////////////*/
 
     function exchangeRateCurrent() public virtual override returns (uint256) {
@@ -85,5 +82,17 @@ contract PendleYearnVaultSCY is SCYBase {
 
     function isValidBaseToken(address token) public view virtual override returns (bool) {
         return token == underlying || token == yvToken;
+    }
+
+    function assetInfo()
+        external
+        view
+        returns (
+            AssetType assetType,
+            address assetAddress,
+            uint8 assetDecimals
+        )
+    {
+        return (AssetType.TOKEN, underlying, IERC20Metadata(underlying).decimals());
     }
 }

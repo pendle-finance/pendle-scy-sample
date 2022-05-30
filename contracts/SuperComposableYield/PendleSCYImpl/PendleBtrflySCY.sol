@@ -15,13 +15,10 @@ contract PendleBtrflyScy is SCYBase {
     constructor(
         string memory _name,
         string memory _symbol,
-        uint8 __scydecimals,
-        uint8 __assetDecimals,
-        bytes32 __assetId,
         address _BTRFLY,
         address _xBTRFLY,
         address _wxBTRFLY
-    ) SCYBase(_name, _symbol, _wxBTRFLY, __scydecimals, __assetDecimals, __assetId) {
+    ) SCYBase(_name, _symbol, _wxBTRFLY) {
         require(_wxBTRFLY != address(0), "zero address");
         BTRFLY = _BTRFLY;
         xBTRFLY = _xBTRFLY;
@@ -69,7 +66,7 @@ contract PendleBtrflyScy is SCYBase {
     }
 
     /*///////////////////////////////////////////////////////////////
-                               SCY-INDEX
+                               EXCHANGE-RATE
     //////////////////////////////////////////////////////////////*/
 
     function exchangeRateCurrent() public virtual override returns (uint256) {
@@ -94,5 +91,17 @@ contract PendleBtrflyScy is SCYBase {
 
     function isValidBaseToken(address token) public view virtual override returns (bool) {
         return token == BTRFLY || token == xBTRFLY || token == wxBTRFLY;
+    }
+
+    function assetInfo()
+        external
+        view
+        returns (
+            AssetType assetType,
+            address assetAddress,
+            uint8 assetDecimals
+        )
+    {
+        return (AssetType.TOKEN, BTRFLY, IERC20Metadata(BTRFLY).decimals());
     }
 }
