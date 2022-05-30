@@ -85,7 +85,6 @@ interface ISuperComposableYield is IERC20Metadata {
     * @notice if asset is an ERC20 token, assetType = 0, info is abi.encode(asset token address)
     * @notice if asset is liquidity of an AMM (like sqrt(k) in UniswapV2 forks), assetType = 1, 
     info is abi.encode(address of the AMM pool)
-    * @notice if there are other types of assets, it can be defined by the implementer
     */
     function assetInfo() external view returns (uint8 assetType, uint8 decimals, bytes info);
 }
