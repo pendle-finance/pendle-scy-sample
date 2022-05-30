@@ -35,48 +35,69 @@
 
     ```solidity
     interface ISuperComposableYield is IERC20Metadata {
+        event NewExchangeRate(uint256 exchangeRate);
+        event Deposit(
+            address indexed caller,
+            address indexed receiver,
+            address indexed tokenIn,
+            uint256 amountDeposited,
+            uint256 amountScyOut
+        );
+
+        event Redeem(
+            address indexed caller,
+            address indexed receiver,
+            address indexed tokenOut,
+            uint256 amountScyToRedeem,
+            uint256 amountTokenOut
+        );
+
+        event ClaimRewardss(address indexed user, address[] rewardTokens, uint256[] rewardAmounts);
+
         function deposit(
             address receiver,
-            address baseTokenIn,
-            uint256 amountBaseIn,
-            uint256 minAmountScyOut
-        ) external returns (uint256 amountScyOut);
+            address tokenIn,
+            uint256 amountTokenToPull,
+            uint256 minSharesOut
+        ) external returns (uint256 amountSharesOut);
 
         function redeem(
             address receiver,
-            address baseTokenOut,
-            uint256 amountScyIn,
-            uint256 minAmountBaseOut
-        ) external returns (uint256 amountBaseOut);
-
-        function harvest(address user) external returns (uint256[] memory rewardAmounts);
+            uint256 amountSharesToPull,
+            address tokenOut,
+            uint256 minTokenOut
+        ) external returns (uint256 amountTokenOut);
 
         /**
-            * @notice exchangeRateCurrent * scyBalance / 1e18 must return the asset balance of the account
-            * @notice vice-versa, if a user uses some amount of tokens equivalent to X asset, the amount of scy
-            he can mint must be X * exchangeRateCurrent / 1e18
-            * @dev SCYUtils's assetToScy & scyToAsset should be used instead of raw multiplication
-            & division
+        * @notice exchangeRateCurrent * scyBalance / 1e18 must return the asset balance of the account
+        * @notice vice-versa, if a user uses some amount of tokens equivalent to X asset, the amount of scy
+        he can mint must be X * exchangeRateCurrent / 1e18
+        * @dev SCYUtils's assetToScy & scyToAsset should be used instead of raw multiplication
+        & division
         */
-        function exchangeRateCurrent() external returns (uint256);
+        function exchangeRateCurrent() external returns (uint256 res);
 
-        function exchangeRateStored() external view returns (uint256);
+        function exchangeRateStored() external view returns (uint256 res);
 
-        function underlyingYieldToken() external view returns (address);
-
-        function getBaseTokens() external view returns (address[] memory);
-
-        function isValidBaseToken(address token) external view returns (bool);
+        function claimRewards(address user) external returns (uint256[] memory rewardAmounts);
 
         function getRewardTokens() external view returns (address[] memory);
 
-        function assetDecimals() external view returns (uint8);
+        function yieldToken() external view returns (address);
 
-        event Deposit(address indexed caller, address indexed receiver, address indexed baseTokenIn, uint256 amountBaseIn, uint256 amountScyOut);
+        function getBaseTokens() external view returns (address[] memory res);
 
-        event Redeem(address indexed caller, address indexed receiver, address indexed baseTokenOut, uint256 amountScyIn, uint256 amountBaseOut);
+        function isValidBaseToken(address token) external view returns (bool);
 
-        event Harvest(address indexed caller, address indexed user, uint256[] rewardAmounts);
+        /**
+        * @notice This function contains information to interpret what the asset is
+        * @notice decimals is the decimals to format asset balances
+        * @notice if asset is an ERC20 token, assetType = 0, info is abi.encode(asset token address)
+        * @notice if asset is liquidity of an AMM (like sqrt(k) in UniswapV2 forks), assetType = 1, 
+        info is abi.encode(address of the AMM pool)
+        * @notice if there are other types of assets, it can be defined by the implementer
+        */
+        function assetInfo() external view returns (uint8 assetType, uint8 decimals, bytes info);
     }
     ```
 
