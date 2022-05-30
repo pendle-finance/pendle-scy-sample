@@ -92,11 +92,10 @@ abstract contract SCYBase is ISuperComposableYield, ERC20, ReentrancyGuard {
     }
 
     /**
-     * @notice calculates the amount of SCY to be minted
-     * @param tokenIn - address of the base token used to mint SCY
-     * @param amountDeposited - amount of base tokens deposited
-     * @return amountSharesOut - amount of SCY to be minted
-     * @dev this function only calculates the amount of SCY to be minted, no token transferring should be done here
+     * @notice mint shares based on the deposited base tokens
+     * @param tokenIn base token address used to mint shares
+     * @param amountDeposited amount of base tokens deposited
+     * @return amountSharesOut amount of shares minted
      */
     function _deposit(address tokenIn, uint256 amountDeposited)
         internal
@@ -104,11 +103,10 @@ abstract contract SCYBase is ISuperComposableYield, ERC20, ReentrancyGuard {
         returns (uint256 amountSharesOut);
 
     /**
-     * @notice calculates the amount of base tokens to be redeemed
-     * @param tokenOut - address of the base token to be redeemed
-     * @param amountSharesToRedeem - amount of SCY tokens burned to redeem
-     * @return amountTokenOut - amount of base tokens to be redeemed
-     * @dev this function only calculates the amount of base tokens to be minted, no transferring should be done here
+     * @notice redeems base tokens based on amount of shares to be burned
+     * @param tokenOut address of the base token to be redeemed
+     * @param amountSharesToRedeem amount of shares to be burned
+     * @return amountTokenOut amount of base tokens redeemed
      */
     function _redeem(address tokenOut, uint256 amountSharesToRedeem)
         internal
@@ -123,10 +121,8 @@ abstract contract SCYBase is ISuperComposableYield, ERC20, ReentrancyGuard {
     }
 
     /**
-     * @notice returns the floating amount of a given token held by this contract
-     * @notice floating tokens are those transferred directly to this contract
-     * @param token - address of the token to be queried
-     * @return - returns the floating amount of (`token`) token owned by this contract
+     * @notice returns the amount of unprocessed tokens owned by this contract
+     * @param token address of the token to be queried
      */
     function _getFloatingAmount(address token) internal view virtual returns (uint256) {
         if (token != yieldToken) return IERC20(token).balanceOf(address(this));

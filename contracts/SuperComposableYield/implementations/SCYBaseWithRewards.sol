@@ -56,7 +56,7 @@ abstract contract SCYBaseWithRewards is SCYBase, RewardManager {
 
     /**
      * @notice returns the total number of reward shares
-     * @dev this is simply the total supply of SCY, as rewards shares are equivalent to SCY shares
+     * @dev this is simply the total supply of shares, as rewards shares are equivalent to SCY shares
      */
     function _rewardSharesTotal() internal virtual override returns (uint256) {
         return totalSupply();

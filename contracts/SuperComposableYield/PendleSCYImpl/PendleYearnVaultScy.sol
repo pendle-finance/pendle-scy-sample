@@ -33,8 +33,12 @@ contract PendleYearnVaultSCY is SCYBase {
     //////////////////////////////////////////////////////////////*/
 
     /**
-     * @notice Calculates amount of SCY shares to be minted, given base token and its amount deposited
-     * @dev `tokenIn` is guaranteed to be one of the valid base tokens
+     * @dev See {SCYBase-_deposit}
+     *  
+     * The underlying yield token is yvToken. If the base token deposited is underlying asset, the function 
+     * first mints yvToken using those deposited. Then the corresponding amount of shares is returned.
+     *
+     * The exchange rate of yvToken to shares is 1:1
      */
     function _deposit(address tokenIn, uint256 amountDeposited)
         internal
@@ -52,8 +56,10 @@ contract PendleYearnVaultSCY is SCYBase {
     }
 
     /**
-     * @notice Calculates amount of tokens to be redeemed, given amount of SCY to be burned
-     * @dev `tokenOut` is guaranteed to be one of the valid base tokens
+     * @dev See {SCYBase-_redeem}
+     * 
+     * The shares are redeemed into the same amount of yvTokens. If `tokenOut` is the underlying asset, 
+     * the function also withdraws said asset for redemption, using the corresponding amount of yvToken.
      */
     function _redeem(address tokenOut, uint256 amountSharesToRedeem)
         internal
@@ -75,8 +81,8 @@ contract PendleYearnVaultSCY is SCYBase {
     //////////////////////////////////////////////////////////////*/
 
     /**
-     * @notice Calculates and updates the exchange rate of SCY
-     * @dev This SCY acts as a wrapper for yvToken, therefore its own price per share suffices
+     * @notice Calculates and updates the exchange rate of shares to underlying asset token
+     * @dev It is the price per share of the yvToken
      */
     function exchangeRateCurrent() public virtual override returns (uint256) {
         uint256 res = IYearnVault(yvToken).pricePerShare();

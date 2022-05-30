@@ -28,7 +28,7 @@ interface ISuperComposableYield is IERC20Metadata {
     /// @dev May be emitted when the SCY exchangeRate is updated
     event NewExchangeRate(uint256 exchangeRate);
 
-    /// @dev Emitted when any base tokens is deposited to mint SCY tokens
+    /// @dev Emitted when any base tokens is deposited to mint shares
     event Deposit(
         address indexed caller,
         address indexed receiver,
@@ -37,7 +37,7 @@ interface ISuperComposableYield is IERC20Metadata {
         uint256 amountScyOut
     );
 
-    /// @dev Emitted when any SCY tokens are redeemed for base tokens
+    /// @dev Emitted when any shares are redeemed for base tokens
     event Redeem(
         address indexed caller,
         address indexed receiver,
@@ -46,34 +46,31 @@ interface ISuperComposableYield is IERC20Metadata {
         uint256 amountTokenOut
     );
 
-    /// @dev Emitted when (`user`) claims rewards
+    /// @dev Emitted when (`user`) claims their rewards
     event ClaimRewardss(address indexed user, address[] rewardTokens, uint256[] rewardAmounts);
 
     /**
-     * @notice mints an amount of SCY tokens by depositing a base token.
-     * @param receiver - address of the SCY token recipient
-     * @param tokenIn - address of the deposited base token
-     * @param amountTokenToPull - amount of base tokens to be deposited using the allowance mechanism
-     * @param minSharesOut - minimum amount of SCY to be minted
-     * @return amountSharesOut - amount of SCY tokens minted
+     * @notice mints an amount of shares by depositing a base token.
+     * @param receiver shares recipient address
+     * @param tokenIn address of the base tokens to mint shares
+     * @param amountTokenToPull amount of base tokens to be transferred from (`msg.sender`)
+     * @param minSharesOut reverts if amount of shares minted is lower than this
+     * @return amountSharesOut amount of shares minted
      * @dev 
      *
-     * There are two ways to deposit a base token:
-     * - The tokens should have been transferred directly to this contract, prior to calling.
-     * - An allowance of at least `amountTokenToPull` for this contract is made by the caller. 
-     * Then calling this function with the corresponding `amountTokenToPull` will allow the
-     * contract to transfer said amount of base tokens to itself.
+     * This contract receives base tokens using these two (possibly both) methods:
+     * - The tokens have been transferred directly to this contract prior to calling deposit().
+     * - Exactly `amountTokenToPull` are transferred to this contract using `transferFrom()` upon calling deposit().
      *
-     * The amount of SCY tokens minted will be based on the combined amount of base tokens newly 
-     * deposited using the given two methods.
+     * The amount of shares minted will be based on the combined amount of base tokens deposited 
+     * using the given two methods.
      *
      * Emits a {Deposit} event
      * 
      * Requirements:
      * - (`baseTokenIn`) must be a valid base token.
-     * - If `amountTokenToPull` is a non-zero value, there must be an ongoing approval from (`msg.sender`)
-     * for this contract with at least `amountTokenToPull` base tokens.
-     * - `minSharesOut` must be sufficiently small (such that at least said amount of SCY can be minted)
+     * - There must be an ongoing approval from (`msg.sender`) for this contract with 
+     * at least `amountTokenToPull` base tokens.
      */
     function deposit(
         address receiver,
@@ -83,31 +80,27 @@ interface ISuperComposableYield is IERC20Metadata {
     ) external returns (uint256 amountSharesOut);
 
     /**
-     * @notice redeems an amount of base tokens by burning some amount of SCY tokens
-     * @param receiver - address of the base token recipient
-     * @param amountSharesToPull - amount of SCY tokens to be deposited using the allowance mechanism
-     * @param tokenOut - address of the base token to be redeemed
-     * @param minTokenOut - minimum amount of base tokens to be redeemed
-     * @return amountTokenOut - amount of base tokens redeemed
+     * @notice redeems an amount of base tokens by burning some shares
+     * @param receiver recipient address
+     * @param amountSharesToPull amount of shares to be transferred from (`msg.sender`)
+     * @param tokenOut address of the base token to be redeemed
+     * @param minTokenOut reverts if amount of base token redeemed is lower than this
+     * @return amountTokenOut amount of base tokens redeemed
      * @dev 
      *
-     * There are two ways to deposit SCY tokens:
-     * - The SCY tokens should have been transferred directly to this contract, prior to calling.
-     * - An allowance of at least `amountSharesToPull` for this contract is made by the caller. 
-     * Then calling this function with the corresponding `amountSharesToPull` will allow the
-     * contract to transfer said amount of base tokens to itself.
+     * This contract receives shares using these two (possibly both) methods:
+     * - The shares have been transferred directly to this contract prior to calling redeem().
+     * - Exactly `amountSharesToPull` are transferred to this contract using `transferFrom()` upon calling redeem().
      *
-     * All of the SCY deposited using the given two methods will be burned to redeem base tokens for
-     * (`receiver`). This also implies that the only time this contract holds its own token is when this 
-     * function is called.
+     * The amount of base tokens redeemed based on the combined amount of shares deposited
+     * using the given two methods
      *
      * Emits a {Redeem} event
      * 
      * Requirements:
      * - (`tokenOut`) must be a valid base token.
-     * - If `amountSharesToPull` is a non-zero value, there must be an ongoing approval from (`msg.sender`)
-     * for this contract with at least `amountSharesToPull` SCY tokens.
-     * - `minTokenOut` must be sufficiently small (such that at least said amount of tokens can be redeemed)
+     * - There must be an ongoing approval from (`msg.sender`) for this contract with 
+     * at least `amountSharesToPull` shares.
      */
     function redeem(
         address receiver,
@@ -128,16 +121,16 @@ interface ISuperComposableYield is IERC20Metadata {
     function exchangeRateCurrent() external returns (uint256 res);
 
     /**
-     * @notice returns the previously updated and stored SCY exchange rate
+     * @notice returns the previously updated and stored shares exchange rate
      * @dev the returned value may be outdated if exchangeRateCurrent() was not called for a
      * extended period of time
      */
     function exchangeRateStored() external view returns (uint256 res);
 
     /**
-     * @notice transfers reward tokens to the user claiming
-     * @param user - address of the user claiming rewards
-     * @return rewardAmounts - an array with the same length as the number of reward 
+     * @notice claims reward for (`user`)
+     * @param user the user receiving their rewards
+     * @return rewardAmounts an array with the same length as the number of reward 
      * tokens, denoting the amount of each corresponding reward tokens
      * @dev 
      * Emits a `ClaimRewardss` event
@@ -156,7 +149,7 @@ interface ISuperComposableYield is IERC20Metadata {
     function yieldToken() external view returns (address);
 
     /**
-     * @notice returns a list of all the base tokens that can be deposited to mint SCY
+     * @notice returns a list of all the base tokens that can be deposited to mint shares
      */
     function getBaseTokens() external view returns (address[] memory res);
 
@@ -166,9 +159,6 @@ interface ISuperComposableYield is IERC20Metadata {
      */
     function isValidBaseToken(address token) external view returns (bool);
 
-    /**
-     * @notice returns the decimals used to get the SCY's user representation
-     */
     function assetDecimals() external view returns (uint8);
 
     function assetId() external view returns (bytes32);

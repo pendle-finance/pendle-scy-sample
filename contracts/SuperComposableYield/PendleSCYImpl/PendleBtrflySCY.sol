@@ -37,8 +37,12 @@ contract PendleBtrflyScy is SCYBase {
     //////////////////////////////////////////////////////////////*/
 
     /**
-     * @notice Calculates amount of SCY shares to be minted, given base token and its amount deposited
-     * @dev `tokenIn` is guaranteed to be one of the valid base tokens
+     * @dev See {SCYBase-_deposit}
+     *  
+     * The underlying yield token is wxBTRFLY. If the base token is not said token, the contract
+     * first wraps from `tokenIn` to wxBRTRFLY. Then the corresponding amount of shares is returned.
+     *
+     * The exchange rate of wxBTRFLY to shares is 1:1
      */
     function _deposit(address tokenIn, uint256 amountDeposited)
         internal
@@ -59,8 +63,10 @@ contract PendleBtrflyScy is SCYBase {
     }
 
     /**
-     * @notice Calculates amount of tokens to be redeemed, given amount of SCY to be burned
-     * @dev `tokenOut` is guaranteed to be one of the valid base tokens
+     * @dev See {SCYBase-_redeem}
+     * 
+     * The shares are redeemed into the same amount of wxBTRFLY. If `tokenOut` is not wxBTRFLY 
+     * the function unwraps said amount of wxBTRFLY into `tokenOut` for redemption.
      */
     function _redeem(address tokenOut, uint256 amountSharesToRedeem)
         internal
@@ -83,8 +89,8 @@ contract PendleBtrflyScy is SCYBase {
     //////////////////////////////////////////////////////////////*/
 
     /**
-     * @notice Calculates and updates the exchange rate of SCY
-     * @dev This SCY acts as a wrapper for WstETH, therefore the exchange rate of WstETH and stETH suffices
+     * @notice Calculates and updates the exchange rate of shares to underlying asset token
+     * @dev It is the conversion rate of wxBTRFLY to BTRFLY
      */
     function exchangeRateCurrent() public virtual override returns (uint256) {
         uint256 res = IWXBTRFLY(wxBTRFLY).xBTRFLYValue(Math.ONE);
