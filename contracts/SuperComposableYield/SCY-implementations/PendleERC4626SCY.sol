@@ -24,6 +24,14 @@ contract PendleERC4626SCY is SCYBase {
                     DEPOSIT/REDEEM USING BASE TOKENS
     //////////////////////////////////////////////////////////////*/
 
+    /**
+     * @dev See {SCYBase-_deposit}
+     *
+     * If the base token deposited is the underlying token, the function deposits it first to mint 
+     * the corresponding ERC4626 token. Then the amount of shares is returned.
+     *
+     * The exchange rate of ERC4626 token to shares is 1:1
+     */
     function _deposit(address tokenIn, uint256 amountDeposited)
         internal
         virtual
@@ -39,6 +47,12 @@ contract PendleERC4626SCY is SCYBase {
         }
     }
 
+    /**
+     * @dev See {SCYBase-_redeem}
+     *
+     * The shares are redeemed into the same amount of ERC4626 tokens. If `tokenOut` is the underlying token,
+     * the function also redeems said asset, then returns the amount of underlying tokens for redemption.
+     */
     function _redeem(address tokenOut, uint256 amountSharesToRedeem)
         internal
         virtual
@@ -60,6 +74,10 @@ contract PendleERC4626SCY is SCYBase {
                                SCY-INDEX
     //////////////////////////////////////////////////////////////*/
 
+    /**
+     * @notice Calculates and updates the exchange rate of shares to underlying asset token
+     * @dev It is the conversion rate of the ERC4626 to its underlying token
+     */
     function exchangeRateCurrent() public virtual override returns (uint256 currentRate) {
         currentRate = IERC4626(yieldToken).convertToAssets(Math.ONE);
 
