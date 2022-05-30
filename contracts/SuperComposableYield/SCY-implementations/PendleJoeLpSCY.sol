@@ -3,8 +3,8 @@ pragma solidity 0.8.9;
 
 import "../../interfaces/IJoePair.sol";
 import "../../interfaces/IJoeRouter02.sol";
-import "../../SuperComposableYield/implementations/SCYBase.sol";
-import "./libraries/LogExpMath.sol";
+import "../base-implementations/SCYBase.sol";
+import "../../libraries/math/LogExpMath.sol";
 
 contract PendleJoeLpSCY is SCYBase {
     using Math for uint256;

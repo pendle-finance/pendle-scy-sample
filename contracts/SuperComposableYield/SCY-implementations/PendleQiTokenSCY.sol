@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity 0.8.9;
 
-import "../../SuperComposableYield/implementations/SCYBaseWithRewards.sol";
+import "../base-implementations/SCYBaseWithRewards.sol";
 import "../../interfaces/IQiErc20.sol";
 import "../../interfaces/IQiAvax.sol";
 import "../../interfaces/IBenQiComptroller.sol";

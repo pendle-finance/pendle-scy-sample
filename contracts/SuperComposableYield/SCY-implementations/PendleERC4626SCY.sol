@@ -1,80 +1,67 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity 0.8.9;
-import "../../SuperComposableYield/implementations/SCYBase.sol";
-import "../../interfaces/IWstETH.sol";
+import "../base-implementations/SCYBase.sol";
+import "../../interfaces/IERC4626.sol";
+import "../../libraries/math/Math.sol";
 
-contract PendleWstEthSCY is SCYBase {
-    address public immutable stETH;
-    address public immutable wstETH;
+contract PendleERC4626SCY is SCYBase {
+    using Math for uint256;
+
+    address public immutable underlying;
 
     uint256 public override exchangeRateStored;
 
     constructor(
         string memory _name,
         string memory _symbol,
-        address _stETH,
-        address _wstETH
-    ) SCYBase(_name, _symbol, _wstETH) {
-        require(_wstETH != address(0), "zero address");
-        stETH = _stETH;
-        wstETH = _wstETH;
-        _safeApprove(stETH, wstETH, type(uint256).max);
+        IERC4626 _yieldToken
+    ) SCYBase(_name, _symbol, address(_yieldToken)) {
+        underlying = _yieldToken.asset();
+        _safeApprove(underlying, yieldToken, type(uint256).max);
     }
 
     /*///////////////////////////////////////////////////////////////
                     DEPOSIT/REDEEM USING BASE TOKENS
     //////////////////////////////////////////////////////////////*/
 
-    /**
-     * @dev See {SCYBase-_deposit}
-     *
-     * The underlying yield token is wstETH. If the base token deposited is stETH, the function wraps
-     * it into wstETH first. Then the corresponding amount of shares is returned.
-     *
-     * The exchange rate of wstETH to shares is 1:1
-     */
     function _deposit(address tokenIn, uint256 amountDeposited)
         internal
         virtual
         override
         returns (uint256 amountSharesOut)
     {
-        if (tokenIn == wstETH) {
+        // 1 4626 = 1 Share
+        if (tokenIn == yieldToken) {
             amountSharesOut = amountDeposited;
         } else {
-            amountSharesOut = IWstETH(wstETH).wrap(amountDeposited); // .wrap returns amount of wstETH out
+            // must be underlying
+            amountSharesOut = IERC4626(yieldToken).deposit(amountDeposited, address(this));
         }
     }
 
-    /**
-     * @dev See {SCYBase-_redeem}
-     *
-     * The shares are redeemed into the same amount of wstETH. If `tokenOut` is stETH, the function also
-     * unwraps said amount of wstETH into stETH for redemption.
-     */
     function _redeem(address tokenOut, uint256 amountSharesToRedeem)
         internal
         virtual
         override
         returns (uint256 amountTokenOut)
     {
-        if (tokenOut == wstETH) {
+        if (tokenOut == yieldToken) {
             amountTokenOut = amountSharesToRedeem;
         } else {
-            amountTokenOut = IWstETH(wstETH).unwrap(amountSharesToRedeem);
+            amountTokenOut = IERC4626(yieldToken).redeem(
+                amountSharesToRedeem,
+                address(this),
+                msg.sender
+            );
         }
     }
 
     /*///////////////////////////////////////////////////////////////
-                               EXCHANGE-RATE
+                               SCY-INDEX
     //////////////////////////////////////////////////////////////*/
 
-    /**
-     * @notice Calculates and updates the exchange rate of shares to underlying asset token
-     * @dev It is the exchange rate of wstETH to stETH
-     */
     function exchangeRateCurrent() public virtual override returns (uint256 currentRate) {
-        currentRate = IWstETH(wstETH).stEthPerToken();
+        currentRate = IERC4626(yieldToken).convertToAssets(Math.ONE);
 
         emit ExchangeRateUpdated(exchangeRateStored, currentRate);
 
@@ -85,20 +72,14 @@ contract PendleWstEthSCY is SCYBase {
                 MISC FUNCTIONS FOR METADATA
     //////////////////////////////////////////////////////////////*/
 
-    /**
-     * @dev See {ISuperComposableYield-getBaseTokens}
-     */
     function getBaseTokens() public view virtual override returns (address[] memory res) {
         res = new address[](2);
-        res[0] = stETH;
-        res[1] = wstETH;
+        res[0] = underlying;
+        res[1] = yieldToken;
     }
 
-    /**
-     * @dev See {ISuperComposableYield-isValidBaseToken}
-     */
     function isValidBaseToken(address token) public view virtual override returns (bool) {
-        return token == stETH || token == wstETH;
+        return token == underlying || token == yieldToken;
     }
 
     function assetInfo()
@@ -110,6 +91,6 @@ contract PendleWstEthSCY is SCYBase {
             uint8 assetDecimals
         )
     {
-        return (AssetType.TOKEN, stETH, IERC20Metadata(stETH).decimals());
+        return (AssetType.TOKEN, underlying, IERC20Metadata(underlying).decimals());
     }
 }

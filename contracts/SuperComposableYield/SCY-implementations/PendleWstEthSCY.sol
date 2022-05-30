@@ -1,30 +1,24 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity 0.8.9;
+import "../base-implementations/SCYBase.sol";
+import "../../interfaces/IWstETH.sol";
 
-import "../../SuperComposableYield/implementations/SCYBase.sol";
-import "../../interfaces/IWXBTRFLY.sol";
-import "../../interfaces/IREDACTEDStaking.sol";
-
-contract PendleBtrflyScy is SCYBase {
-    address public immutable BTRFLY;
-    address public immutable xBTRFLY;
-    address public immutable wxBTRFLY;
+contract PendleWstEthSCY is SCYBase {
+    address public immutable stETH;
+    address public immutable wstETH;
 
     uint256 public override exchangeRateStored;
 
     constructor(
         string memory _name,
         string memory _symbol,
-        address _BTRFLY,
-        address _xBTRFLY,
-        address _wxBTRFLY
-    ) SCYBase(_name, _symbol, _wxBTRFLY) {
-        require(_wxBTRFLY != address(0), "zero address");
-        BTRFLY = _BTRFLY;
-        xBTRFLY = _xBTRFLY;
-        wxBTRFLY = _wxBTRFLY;
-        _safeApprove(BTRFLY, wxBTRFLY, type(uint256).max);
-        _safeApprove(xBTRFLY, wxBTRFLY, type(uint256).max);
+        address _stETH,
+        address _wstETH
+    ) SCYBase(_name, _symbol, _wstETH) {
+        require(_wstETH != address(0), "zero address");
+        stETH = _stETH;
+        wstETH = _wstETH;
+        _safeApprove(stETH, wstETH, type(uint256).max);
     }
 
     /*///////////////////////////////////////////////////////////////
@@ -34,10 +28,10 @@ contract PendleBtrflyScy is SCYBase {
     /**
      * @dev See {SCYBase-_deposit}
      *
-     * The underlying yield token is wxBTRFLY. If the base token is not said token, the contract
-     * first wraps from `tokenIn` to wxBRTRFLY. Then the corresponding amount of shares is returned.
+     * The underlying yield token is wstETH. If the base token deposited is stETH, the function wraps
+     * it into wstETH first. Then the corresponding amount of shares is returned.
      *
-     * The exchange rate of wxBTRFLY to shares is 1:1
+     * The exchange rate of wstETH to shares is 1:1
      */
     function _deposit(address tokenIn, uint256 amountDeposited)
         internal
@@ -45,23 +39,18 @@ contract PendleBtrflyScy is SCYBase {
         override
         returns (uint256 amountSharesOut)
     {
-        if (tokenIn == wxBTRFLY) {
+        if (tokenIn == wstETH) {
             amountSharesOut = amountDeposited;
-        } else if (tokenIn == xBTRFLY) {
-            // wrapFromxBTRFLY returns amountWXBTRFLYout
-            amountSharesOut = IWXBTRFLY(wxBTRFLY).wrapFromxBTRFLY(amountDeposited);
         } else {
-            // must be BTRFLY
-            // wrapFromBTRFLY returns amountWXBTRFLYout
-            amountSharesOut = IWXBTRFLY(wxBTRFLY).wrapFromBTRFLY(amountDeposited);
+            amountSharesOut = IWstETH(wstETH).wrap(amountDeposited); // .wrap returns amount of wstETH out
         }
     }
 
     /**
      * @dev See {SCYBase-_redeem}
      *
-     * The shares are redeemed into the same amount of wxBTRFLY. If `tokenOut` is not wxBTRFLY
-     * the function unwraps said amount of wxBTRFLY into `tokenOut` for redemption.
+     * The shares are redeemed into the same amount of wstETH. If `tokenOut` is stETH, the function also
+     * unwraps said amount of wstETH into stETH for redemption.
      */
     function _redeem(address tokenOut, uint256 amountSharesToRedeem)
         internal
@@ -69,13 +58,10 @@ contract PendleBtrflyScy is SCYBase {
         override
         returns (uint256 amountTokenOut)
     {
-        if (tokenOut == wxBTRFLY) {
+        if (tokenOut == wstETH) {
             amountTokenOut = amountSharesToRedeem;
-        } else if (tokenOut == xBTRFLY) {
-            amountTokenOut = IWXBTRFLY(wxBTRFLY).unwrapToxBTRFLY(amountSharesToRedeem);
         } else {
-            // must be BTRFLY
-            amountTokenOut = IWXBTRFLY(wxBTRFLY).unwrapToBTRFLY(amountSharesToRedeem);
+            amountTokenOut = IWstETH(wstETH).unwrap(amountSharesToRedeem);
         }
     }
 
@@ -85,10 +71,10 @@ contract PendleBtrflyScy is SCYBase {
 
     /**
      * @notice Calculates and updates the exchange rate of shares to underlying asset token
-     * @dev It is the conversion rate of wxBTRFLY to BTRFLY
+     * @dev It is the exchange rate of wstETH to stETH
      */
     function exchangeRateCurrent() public virtual override returns (uint256 currentRate) {
-        currentRate = IWXBTRFLY(wxBTRFLY).xBTRFLYValue(Math.ONE);
+        currentRate = IWstETH(wstETH).stEthPerToken();
 
         emit ExchangeRateUpdated(exchangeRateStored, currentRate);
 
@@ -103,17 +89,16 @@ contract PendleBtrflyScy is SCYBase {
      * @dev See {ISuperComposableYield-getBaseTokens}
      */
     function getBaseTokens() public view virtual override returns (address[] memory res) {
-        res = new address[](3);
-        res[0] = BTRFLY;
-        res[1] = xBTRFLY;
-        res[2] = wxBTRFLY;
+        res = new address[](2);
+        res[0] = stETH;
+        res[1] = wstETH;
     }
 
     /**
      * @dev See {ISuperComposableYield-isValidBaseToken}
      */
     function isValidBaseToken(address token) public view virtual override returns (bool) {
-        return token == BTRFLY || token == xBTRFLY || token == wxBTRFLY;
+        return token == stETH || token == wstETH;
     }
 
     function assetInfo()
@@ -125,6 +110,6 @@ contract PendleBtrflyScy is SCYBase {
             uint8 assetDecimals
         )
     {
-        return (AssetType.TOKEN, BTRFLY, IERC20Metadata(BTRFLY).decimals());
+        return (AssetType.TOKEN, stETH, IERC20Metadata(stETH).decimals());
     }
 }

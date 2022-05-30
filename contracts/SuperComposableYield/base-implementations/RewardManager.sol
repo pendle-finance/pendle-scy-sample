@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity 0.8.9;
-import "../ISuperComposableYield.sol";
-import "./IRewardManager.sol";
+import "./ISuperComposableYield.sol";
+import "../../interfaces/IRewardManager.sol";
 import "../../libraries/math/Math.sol";
-import "./TokenHelper.sol";
+import "../../libraries/TokenHelper.sol";
 
 abstract contract RewardManager is IRewardManager, TokenHelper {
     using Math for uint256;

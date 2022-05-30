@@ -14,13 +14,13 @@
 
 pragma solidity 0.8.9;
 
+import "./LogExpMath.sol";
+
 /* solhint-disable private-vars-leading-underscore, reason-string */
 
 library Math {
     uint256 internal constant ONE = 1e18; // 18 decimal places
     int256 internal constant IONE = 1e18; // 18 decimal places
-
-    uint256 internal constant MAX_POW_RELATIVE_ERROR = 10000; // 10^(-14)
 
     function subMax0(uint256 a, uint256 b) internal pure returns (uint256) {
         unchecked {
@@ -29,10 +29,8 @@ library Math {
     }
 
     function subNoNeg(int256 a, int256 b) internal pure returns (int256) {
-        require(a >= b, "NEGATIVE");
-        unchecked {
-            return a - b;
-        }
+        require(a >= b, "negative");
+        return a - b; // no unchecked since a+b might be >= uint256
     }
 
     function mulDown(uint256 a, uint256 b) internal pure returns (uint256) {
@@ -66,9 +64,7 @@ library Math {
     function rawDivUp(uint256 a, uint256 b) internal pure returns (uint256) {
         if (a == 0) return 0;
         else {
-            unchecked {
-                return (a + b - 1) / b;
-            }
+            return (a + b - 1) / b;
         }
     }
 
@@ -77,11 +73,11 @@ library Math {
     }
 
     function neg(int256 x) internal pure returns (int256) {
-        return -x;
+        return x * (-1);
     }
 
     function neg(uint256 x) internal pure returns (int256) {
-        return -Int(x);
+        return Int(x) * (-1);
     }
 
     function max(uint256 x, uint256 y) internal pure returns (uint256) {
@@ -111,7 +107,7 @@ library Math {
     }
 
     function Int128(int256 x) internal pure returns (int128) {
-        require(x < (1 << 127)); // signed, lim = bit-1
+        require(-(1 << 127) <= x && x < (1 << 127)); // signed, lim = bit-1
         return int128(x);
     }
 
@@ -123,6 +119,11 @@ library Math {
     function Uint112(uint256 x) internal pure returns (uint112) {
         require(x < (1 << 112)); // unsigned, lim = bit
         return uint112(x);
+    }
+
+    function Uint96(uint256 x) internal pure returns (uint96) {
+        require(x < (1 << 96)); // unsigned, lim = bit
+        return uint96(x);
     }
 
     function isAApproxB(

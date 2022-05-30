@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity 0.8.9;
 
-import "../../SuperComposableYield/implementations/SCYBase.sol";
+import "../base-implementations/SCYBase.sol";
 import "../../interfaces/IYearnVault.sol";
 
 contract PendleYearnVaultSCY is SCYBase {
