@@ -27,7 +27,7 @@ contract PendleERC4626SCY is SCYBase {
     /**
      * @dev See {SCYBase-_deposit}
      *
-     * If the base token deposited is the underlying token, the function deposits it first to mint 
+     * If the base token deposited is the underlying token, the function deposits it first to mint
      * the corresponding ERC4626 token. Then the amount of shares is returned.
      *
      * The exchange rate of ERC4626 token to shares is 1:1
@@ -65,7 +65,7 @@ contract PendleERC4626SCY is SCYBase {
             amountTokenOut = IERC4626(yieldToken).redeem(
                 amountSharesToRedeem,
                 address(this),
-                msg.sender
+                address(this)
             );
         }
     }
